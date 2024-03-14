@@ -1,3 +1,3 @@
 # Internal Communication System
 ---
-![[intro.png]]
+![[docs/assets/intro.png]]
