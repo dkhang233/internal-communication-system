@@ -1,3 +1,3 @@
 # Internal Communication System
 ---
-![[docs/assets/intro.png]]
+![intro](/docs/assets/intro.png "intro")
