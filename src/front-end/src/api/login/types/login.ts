@@ -1,6 +1,6 @@
 export interface LoginRequestData {
   /** admin or editor */
-  username: "admin" | "editor"
+  email: string
   /** password */
   password: string
   /** Verification code */
@@ -11,4 +11,4 @@ export type LoginCodeResponseData = ApiResponseData<string>
 
 export type LoginResponseData = ApiResponseData<{ token: string }>
 
-export type UserInfoResponseData = ApiResponseData<{ username: string; roles: string[] }>
+export type UserInfoResponseData = ApiResponseData<{ username: string; roles: number[] }>

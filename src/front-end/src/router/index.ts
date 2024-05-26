@@ -72,10 +72,29 @@ export const constantRoutes: RouteRecordRaw[] = [
         name: "Meet",
         meta: {
           title: "Meet",
-          svgIcon: "meet"
+          svgIcon: "meet",
+          keepAlive: true
         }
       }
+      // {
+      //   path: "join",
+      //   component: () => import("@/views/meet/JoinMeet.vue"),
+      //   name: "JoinMeet",
+      //   meta: {
+      //     title: "JoinMeet",
+      //     hidden: true
+      //   }
+      // }
     ]
+  },
+  {
+    path: "/join-meet",
+    component: () => import("@/views/meet/JoinMeet.vue"),
+    name: "JoinMeet",
+    meta: {
+      title: "JoinMeet",
+      hidden: true
+    }
   },
   {
     path: "/link",

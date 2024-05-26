@@ -1,46 +1,131 @@
 <script lang="ts" setup>
-import { computed, ref } from "vue"
-import JitsiMeet from "./components/JitsiMeet.vue"
-import { useUserStore } from "@/store/modules/user"
+import { onMounted, ref } from "vue"
+import Post from "./components/Post.vue"
+import { useRouter } from "vue-router"
+import { userMeetStore } from "@/store/modules/meet"
+import { removeCurrentMeet, setCurrentMeet } from "@/utils/cache/cookies"
 
-const userStore = useUserStore()
-const onIFrameLoad = () => {}
-const jitsiOptions = computed(() => {
-  return {
-    roomName: "some-room-name",
-    noSSL: false,
-    userInfo: {
-      email: "user@email.com",
-      displayName: userStore.username ?? ""
-    },
-    configOverwrite: {
-      enableNoisyMicDetection: false,
-      securityUi: {
-        hideLobbyButton: true
-      }
-    },
-    interfaceConfigOverwrite: {
-      SHOW_JITSI_WATERMARK: false,
-      SHOW_WATERMARK_FOR_GUESTS: false,
-      SHOW_CHROME_EXTENSION_BANNER: false
-    },
-    onload: onIFrameLoad
-  }
-})
-
-const loading = ref(true)
-
-const handleLoaded = function () {
-  loading.value = false
+interface MeetDetails {
+  name: string
+  time?: Date
 }
+
+const router = useRouter()
+const routeData = router.resolve({ name: "JoinMeet" })
+const showCreateMeetForm = ref<boolean>(false)
+const createMeetForm = ref<MeetDetails>({
+  name: "Meeting",
+  time: new Date()
+})
+const loading = ref<boolean>(false)
+// const meetData = ref<MeetData[]>([])
+const meetingWindow = ref(userMeetStore().meetingWindow)
+
+const createNewMeet = () => {
+  showCreateMeetForm.value = true
+}
+
+const joinMeet = (name?: string) => {
+  setCurrentMeet(name || "New meeting")
+  if (!meetingWindow.value || meetingWindow.value.closed) {
+    meetingWindow.value = window.open(routeData.href, "_blank", "menubar=1")
+    meetingWindow.value.opener.addEventListener("beforeunload", () => {
+      meetingWindow?.value.close()
+      removeCurrentMeet()
+    })
+  } else {
+    meetingWindow.value.focus()
+  }
+}
+
+const caculateTime = (begin: Date, end: Date): string => {
+  if (end < begin) {
+    return ""
+  }
+  const long = ref(0)
+  const time = ref("")
+  long.value = (end.getTime() - begin.getTime()) / 1000
+
+  if (long.value >= 3600) {
+    let hours = Math.floor(long.value / 3600)
+    time.value = time.value.concat(hours + "h")
+    long.value = long.value - hours * 3600
+  }
+
+  if (long.value >= 60) {
+    let minutes = Math.floor(long.value / 60)
+    time.value = time.value.concat(minutes + "m")
+    long.value = long.value - minutes * 60
+  }
+
+  if (long.value > 0) {
+    time.value = time.value.concat(long.value + "s")
+  }
+
+  return ` ( ended in: ${time.value} )`
+}
+userMeetStore().getRooms()
 </script>
 
 <template>
-  <JitsiMeet
-    v-loading="loading"
-    element-loading-text="Loading..."
-    domain="call.dkhang233.site"
-    :options="jitsiOptions"
-    @loaded="handleLoaded"
-  ></JitsiMeet>
+  <div class="app-container center">
+    <Post
+      class="post"
+      v-for="{ name, createdAt, destroyedAt } in userMeetStore().rooms"
+      :name="name"
+      :createdAt="new Date(createdAt).toLocaleString()"
+      :time="caculateTime(new Date(createdAt), new Date(destroyedAt))"
+      @joinMeet="joinMeet(name)"
+    />
+    <el-card class="create-meet" @click="createNewMeet">
+      <el-icon size="25" color="black">
+        <VideoCamera />
+      </el-icon>
+    </el-card>
+    <!-- <component :is="isAdmin ? PostList : JitsiMeet" v-bind="currentProperties" /> -->
+    <el-dialog v-model="showCreateMeetForm" title="Create meeting" width="500">
+      <el-form :model="createMeetForm">
+        <el-form-item label="Name" label-width="normal">
+          <el-input v-model="createMeetForm.name" autocomplete="off" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="showCreateMeetForm = false">Cancel</el-button>
+          <el-button type="primary" @click="joinMeet(createMeetForm.name)"> Join now </el-button>
+        </div>
+      </template>
+    </el-dialog>
+  </div>
 </template>
+
+<style lang="scss" scoped>
+.center {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  // justify-content: center;
+  align-items: center;
+}
+.post {
+  padding-bottom: 20px;
+}
+
+.create-meet {
+  --el-card-padding: 20px;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  right: 30px;
+  border-radius: 20px;
+  cursor: pointer;
+  background-color: white;
+  &-text {
+    display: inline;
+    padding: 0 0 0 10px;
+  }
+  &:hover {
+    background-color: #ecf0f1;
+  }
+}
+</style>

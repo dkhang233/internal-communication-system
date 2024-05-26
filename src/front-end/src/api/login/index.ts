@@ -4,7 +4,7 @@ import type * as Login from "./types/login"
 /** Get login verification code */
 export function getLoginCodeApi() {
   return request<Login.LoginCodeResponseData>({
-    url: "login/code",
+    url: "users/code",
     method: "get"
   })
 }

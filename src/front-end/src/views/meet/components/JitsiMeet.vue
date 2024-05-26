@@ -3,6 +3,8 @@
 </template>
 
 <script>
+import { removeCurrentMeet } from "@/utils/cache/cookies"
+
 export default {
   props: {
     domain: {
@@ -14,7 +16,6 @@ export default {
       default: () => ({})
     }
   },
-  emits: ["loaded"],
   data() {
     return {
       jitsiApi: null
@@ -24,7 +25,13 @@ export default {
     this.loadScript(`https://${this.domain}/external_api.js`, () => {
       if (!window.JitsiMeetExternalAPI) throw new Error("Jitsi Meet External API not loaded")
       this.embedJitsiWidget()
-      this.$emit("loaded")
+      this.jitsiApi.addEventListener("readyToClose", function () {
+        removeCurrentMeet()
+        window.close()
+      })
+      window.addEventListener("beforeunload", function () {
+        removeCurrentMeet()
+      })
     })
   },
   beforeDestroy() {
@@ -49,7 +56,7 @@ export default {
       this.jitsiApi.executeCommand(command, ...value)
     },
     addEventListener(event, fn) {
-      this.jitsiApi.on(event, fn)
+      this.jitsiApi.addListener(event, fn)
     },
     // Misc
     removeJitsiWidget() {

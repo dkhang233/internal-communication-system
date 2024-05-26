@@ -35,7 +35,8 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
       /** Interface proxy */
       proxy: {
         "/api/v1": {
-          target: "https://mock.mengxuegu.com/mock/63218b5fb4c53348ed2bc212",
+          // target: "https://mock.mengxuegu.com/mock/63218b5fb4c53348ed2bc212",
+          target: "http://localhost:8080/api/v1",
           ws: true,
           /** Whether to allow cross-domain */
           changeOrigin: true
