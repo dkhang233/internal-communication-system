@@ -37,33 +37,6 @@ const joinMeet = (name?: string) => {
     meetingWindow.value.focus()
   }
 }
-
-const caculateTime = (begin: Date, end: Date): string => {
-  if (end < begin) {
-    return ""
-  }
-  const long = ref(0)
-  const time = ref("")
-  long.value = (end.getTime() - begin.getTime()) / 1000
-
-  if (long.value >= 3600) {
-    let hours = Math.floor(long.value / 3600)
-    time.value = time.value.concat(hours + "h")
-    long.value = long.value - hours * 3600
-  }
-
-  if (long.value >= 60) {
-    let minutes = Math.floor(long.value / 60)
-    time.value = time.value.concat(minutes + "m")
-    long.value = long.value - minutes * 60
-  }
-
-  if (long.value > 0) {
-    time.value = time.value.concat(long.value + "s")
-  }
-
-  return ` ( ended in: ${time.value} )`
-}
 userMeetStore().getRooms()
 </script>
 
@@ -73,8 +46,8 @@ userMeetStore().getRooms()
       class="post"
       v-for="{ name, createdAt, destroyedAt } in userMeetStore().rooms"
       :name="name"
-      :createdAt="new Date(createdAt).toLocaleString()"
-      :time="caculateTime(new Date(createdAt), new Date(destroyedAt))"
+      :createdAt="new Date(createdAt)"
+      :time="new Date(destroyedAt).getTime() - new Date(createdAt).getTime()"
       @joinMeet="joinMeet(name)"
     />
     <el-card class="create-meet" @click="createNewMeet">

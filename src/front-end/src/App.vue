@@ -14,3 +14,9 @@ initTheme()
     <router-view />
   </el-config-provider>
 </template>
+
+<style lang="scss">
+.el-card__header {
+  padding: 0px;
+}
+</style>
