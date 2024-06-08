@@ -1,0 +1,14 @@
+{
+  "Vue3 SFC One-click generation of code structure": {
+    "prefix": "Vue3 SFC",
+    "body": [
+      "<script lang=\"ts\" setup></script>\n",
+      "<template>",
+      "\t<div class=\"app-container\">...</div>",
+      "</template>\n",
+      "<style scoped></style>",
+      "$1"
+    ],
+    "description": "Vue3 SFC"
+  }
+}

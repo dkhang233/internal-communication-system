@@ -1,0 +1,55 @@
+/** Customize Element Plus style */
+
+// Card
+.el-card {
+  background-color: var(--el-bg-color);
+}
+
+// Pagination
+.el-pagination {
+  // Refer to Bootstrap's responsive design WIDTH = 768
+  @media screen and (max-width: 768px) {
+    .el-pagination__total,
+    .el-pagination__sizes,
+    .el-pagination__jump,
+    .btn-prev,
+    .btn-next {
+      display: none !important;
+    }
+  }
+}
+
+.el-card__body {
+  // padding: 0px;
+}
+
+// custom badge
+.badge-style {
+  width: 10px !important;
+  height: 10px !important;
+  background-color: #44b700;
+  color: #44b700;
+  box-shadow: 0 0 0 2px var(--el-bg-color-overlay);
+  &::after {
+    position: "absolute";
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    animation: ripple 1.2s infinite ease-in-out;
+    border: 1px solid currentColor;
+    content: "";
+  }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
