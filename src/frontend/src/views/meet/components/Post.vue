@@ -90,10 +90,10 @@ const handleTimer = function () {
 
 const handleEndedIn = function () {
   if (clock.value) {
-    endedIn.value = endedIn.value.concat(" ( ended in: ")
+    endedIn.value = endedIn.value.concat(" (ended in: ")
     endedIn.value = endedIn.value.concat(clock.value.hours ? clock.value.hours + "h" : "")
     endedIn.value = endedIn.value.concat(clock.value.minutes ? clock.value.minutes + "m" : "")
-    endedIn.value = endedIn.value.concat(clock.value.seconds ? clock.value.seconds + "s )" : " )")
+    endedIn.value = endedIn.value.concat(clock.value.seconds ? clock.value.seconds + "s)" : ")")
   }
 }
 

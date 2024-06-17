@@ -105,10 +105,10 @@ export const constantRoutes: RouteRecordRaw[] = [
   },
   {
     path: "/join-meet",
-    component: () => import("@/views/meet/JoinMeet.vue"),
-    name: "JoinMeet",
+    component: () => import("@/views/meet/MeetingWindow.vue"),
+    name: "MeetingWindow",
     meta: {
-      title: "JoinMeet",
+      title: "MeetingWindow",
       hidden: true
     }
   },

@@ -16,6 +16,7 @@ import "element-plus/theme-chalk/dark/css-vars.css"
 import "vxe-table/lib/style.css"
 import "vxe-table-plugin-element/dist/style.css"
 import "@/styles/index.scss"
+import "vue3-emoji-picker/css"
 
 const app = createApp(App)
 

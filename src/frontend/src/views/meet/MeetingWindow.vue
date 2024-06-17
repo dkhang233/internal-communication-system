@@ -3,10 +3,11 @@ import { ref, watchEffect } from "vue"
 import Meet from "./components/Meet.vue"
 import { useUserStore } from "@/store/modules/user"
 import { getCurrentMeet, getMeetToken } from "@/utils/cache/cookies"
+import { env } from "process"
 
-const domain: string = "meet.site"
-// const meetToken: string = getMeetToken() || ""
-const meetToken: string = ""
+const domain: string = import.meta.env.VITE_MEET_DOMAIN
+const meetToken: string = getMeetToken() || ""
+// const meetToken: string = ""
 const options = {
   roomName: getCurrentMeet() || "New meeting",
   userInfo: {

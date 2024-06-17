@@ -2,6 +2,8 @@
 import { onMounted, onBeforeUnmount, ref } from "vue"
 import { removeCurrentMeet, removeMeetToken } from "@/utils/cache/cookies"
 
+const window: any = ref(null)
+
 interface Props {
   domain: string
   options: any

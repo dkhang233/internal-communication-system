@@ -12,10 +12,10 @@ interface MeetDetails {
 }
 
 const router = useRouter()
-const routeData = router.resolve({ name: "JoinMeet" })
+const routeData = router.resolve({ name: "MeetingWindow" })
 const showCreateMeetForm = ref<boolean>(false)
 const createMeetForm = ref<MeetDetails>({
-  name: "Meeting",
+  name: "New meeting",
   time: new Date()
 })
 const loading = ref<boolean>(false)

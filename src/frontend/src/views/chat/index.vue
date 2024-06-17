@@ -1,64 +1,50 @@
 <script lang="ts" setup>
 import { ref } from "vue"
-import Contact from "./components/Contact.vue"
-import Message from "./components/Message.vue"
+import Contact from "./components/contact/Contact.vue"
+import Conversation from "./components/conversation/Conversation.vue"
 import { useDevice } from "@/hooks/useDevice"
+import { useChatStore } from "@/store/modules/chat"
 const search = ref<string>("")
 const { isMobile } = useDevice()
-const contacts = [
-  {
-    name: "Khang",
-    online: true,
-    message: "Hello",
-    sendedAt: "16:00"
-  },
-  {
-    name: "Minh",
-    online: true,
-    message: "How are you?",
-    sendedAt: "7:00"
-  },
-  {
-    name: "Tom",
-    message: "hehe",
-    sendedAt: "11:10"
-  }
-]
+
+const selectedContact = {
+  name: "Lewandoski",
+  online: true,
+  messages: "hehe"
+}
 </script>
 <template>
   <div class="app-container">
-    <div class="contacts">
+    <div class="contacts" v-if="!isMobile">
       <el-input class="search" v-model="search" placeholder="Search..." prefix-icon="Search" />
       <!-- <el-icon class="icon-wrapper"><Search /></el-icon>
         <input class="input" v-model="search" placeholder="Search..." /> -->
       <el-scrollbar class="list">
         <Contact
-          v-for="contact in contacts"
+          v-for="contact in useChatStore().contacts"
           :name="contact.name"
           :online="contact.online"
-          :newest-message="contact.message"
-          :sended-at="contact.sendedAt"
+          :newest-message="contact.newestMessage.content"
+          :sended-at="contact.newestMessage.sendedAt"
         />
       </el-scrollbar>
     </div>
-    <Message class="messages" v-if="!isMobile"></Message>
+    <Conversation class="conversation" :name="selectedContact.name" :online="selectedContact.online"></Conversation>
   </div>
 </template>
 <style lang="scss" scoped>
 .app-container {
+  width: 100%;
+  height: 100%;
   display: flex;
-  flex-direction: row;
+  justify-content: center;
 }
 
 .contacts {
-  flex-grow: 1;
+  width: 30%;
   display: flex;
   flex-direction: column;
   padding-right: 10px;
-}
-
-.messages {
-  flex-grow: 10;
 }
 
 .search {

@@ -48,7 +48,7 @@ const props = withDefaults(defineProps<Props>(), {
 }
 
 .contact-container {
-  height: 5rem;
+  height: 6rem;
   border-radius: 0.5rem;
   margin: 10px;
   background-color: var(--el-bg-color-overlay);
@@ -73,7 +73,18 @@ const props = withDefaults(defineProps<Props>(), {
 }
 
 .name {
+  max-width: 6.5rem;
   font-weight: 800;
   margin-bottom: 7px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.message {
+  max-width: 8rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 </style>
