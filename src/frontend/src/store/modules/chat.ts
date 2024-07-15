@@ -1,5 +1,8 @@
+import { getAllMessagesApi } from "@/api/chat"
+import { MessageResponse } from "@/api/chat/types/message"
 import { defineStore } from "pinia"
 import { ref } from "vue"
+import { useUserStore } from "./user"
 
 export enum MessageType {
   TEXT = "text",
@@ -9,19 +12,13 @@ export enum MessageType {
 interface Contact {
   name: string
   online: boolean
-  newestMessage: Message
 }
 
-export interface Message {
+export interface MessageData {
   type: MessageType
   content: string
   sendedAt: string
   incoming: boolean
-}
-
-interface Conversation {
-  name: string
-  messages: Message[]
 }
 
 export const handleSendedAt = (input: Date): string => {
@@ -29,163 +26,50 @@ export const handleSendedAt = (input: Date): string => {
 }
 
 export const useChatStore = defineStore("chat", () => {
-  const contacts = ref<Contact[]>([
-    {
-      name: "Khang",
-      online: true,
-      newestMessage: {
+  const contacts = ref<Map<string, Contact>>(new Map<string, Contact>())
+  const conversations = ref<Map<string, MessageData[]>>(new Map<string, MessageData[]>())
+  const currentChatUser = ref<string>("")
+  const getAllMessages = async function () {
+    conversations.value.clear()
+    const { data } = await getAllMessagesApi()
+    data.forEach((msg) => {
+      let message: MessageData = {
         type: MessageType.TEXT,
-        content: "Chào ngày mới. Hôm nay là một ngày tuyệt vời. Hãy cùng chia sẻ một câu chuyện",
-        sendedAt: handleSendedAt(new Date()),
+        content: msg.content,
+        sendedAt: handleSendedAt(new Date(msg.sendedAt)),
         incoming: true
       }
-    },
-    {
-      name: "Minh",
-      online: true,
-      newestMessage: {
-        type: MessageType.TEXT,
-        content: "",
-        sendedAt: handleSendedAt(new Date("2024-06-01 20:30")),
-        incoming: false
-      }
-    },
-    {
-      name: "Tom",
-      online: false,
-      newestMessage: {
-        type: MessageType.TEXT,
-        content: "",
-        sendedAt: handleSendedAt(new Date("2024-06-01 19:30")),
-        incoming: true
-      }
-    },
-    {
-      name: "Robert Lewandoskiiii",
-      online: false,
-      newestMessage: {
-        type: MessageType.TEXT,
-        content: "",
-        sendedAt: handleSendedAt(new Date("2024-06-01 20:30")),
-        incoming: false
-      }
-    },
-    {
-      name: "Pedri",
-      online: true,
-      newestMessage: {
-        type: MessageType.TEXT,
-        content: "",
-        sendedAt: handleSendedAt(new Date("2024-06-01 20:30")),
-        incoming: false
-      }
-    },
-    {
-      name: "Gavi",
-      online: false,
-      newestMessage: {
-        type: MessageType.TEXT,
-        content: "",
-        sendedAt: handleSendedAt(new Date("2024-06-01 20:30")),
-        incoming: true
-      }
-    },
-    {
-      name: "Cancelo",
-      online: false,
-      newestMessage: {
-        type: MessageType.TEXT,
-        content: "",
-        sendedAt: handleSendedAt(new Date("2024-06-01 20:30")),
-        incoming: false
-      }
-    }
-  ])
+      if (useUserStore().email === msg.sender) {
+        message.incoming = false
+        let messages: MessageData[] = conversations.value.get(msg.recipient) || []
+        messages.push(message)
+        conversations.value.set(msg.recipient, messages)
 
-  const conversations = ref<Conversation[]>([
-    {
-      name: "Khang",
-      messages: [
-        {
-          type: MessageType.TEXT,
-          content: "Chào ngày mới. Hôm nay là một ngày tuyệt vời. Hãy cùng chia sẻ một câu chuyện",
-          sendedAt: handleSendedAt(new Date("2024-06-01 20:30")),
-          incoming: false
-        },
-        {
-          type: MessageType.TEXT,
-          content: "Đây là mở đầu câu chuyện cực kì thú vị",
-          sendedAt: handleSendedAt(new Date("2024-06-01 20:30")),
-          incoming: true
-        },
-        {
-          type: MessageType.TEXT,
-          content: "Đây là diễn biến câu chuyện cực kì thú vị",
-          sendedAt: handleSendedAt(new Date("2024-06-01 20:30")),
-          incoming: true
-        },
-        {
-          type: MessageType.TEXT,
-          content: "Đây là mở đầu câu chuyện cực kì thú vị",
-          sendedAt: handleSendedAt(new Date("2024-06-01 20:30")),
-          incoming: false
-        },
-        {
-          type: MessageType.TEXT,
-          content:
-            "If you have an existing project that uses a JavaScript package manager, you can install Vue Router from the npm registry",
-          sendedAt: handleSendedAt(new Date("2024-06-01 20:30")),
-          incoming: false
-        },
-        {
-          type: MessageType.TEXT,
-          content:
-            "If you have an existing project that uses a JavaScript package manager, you can install Vue Router from the npm registry",
-          sendedAt: handleSendedAt(new Date("2024-06-01 20:30")),
-          incoming: false
-        },
-        {
-          type: MessageType.TEXT,
-          content:
-            "If you have an existing project that uses a JavaScript package manager, you can install Vue Router from the npm registry",
-          sendedAt: handleSendedAt(new Date("2024-06-01 20:30")),
-          incoming: false
-        },
-        {
-          type: MessageType.TEXT,
-          content:
-            "If you have an existing project that uses a JavaScript package manager, you can install Vue Router from the npm registry",
-          sendedAt: handleSendedAt(new Date("2024-06-01 20:30")),
-          incoming: false
+        if (!contacts.value.has(msg.recipient)) {
+          let contact: Contact = {
+            name: msg.recipientUsername,
+            online: true
+          }
+          contacts.value.set(msg.recipient, contact)
         }
-      ]
-    },
-    {
-      name: "Minh",
-      messages: []
-    },
-    {
-      name: "Tom",
-      messages: []
-    },
-    {
-      name: "Lewandoski",
-      messages: []
-    },
-    {
-      name: "Pedri",
-      messages: []
-    },
-    {
-      name: "Gavi",
-      messages: []
-    },
-    {
-      name: "Cancelo",
-      messages: []
-    }
-  ])
+      } else {
+        message.incoming = true
+        let messages: MessageData[] = conversations.value.get(msg.sender) || []
+        messages.push(message)
+        conversations.value.set(msg.sender, messages)
+
+        if (!contacts.value.has(msg.sender)) {
+          let contact: Contact = {
+            name: msg.senderUsername,
+            online: true
+          }
+          contacts.value.set(msg.sender, contact)
+        }
+      }
+    })
+    currentChatUser.value = contacts.value.keys().next().value
+  }
 
   const hasNewMessage = ref<boolean>(false)
-  return { contacts, conversations, hasNewMessage }
+  return { contacts, currentChatUser, conversations, hasNewMessage, getAllMessages }
 })

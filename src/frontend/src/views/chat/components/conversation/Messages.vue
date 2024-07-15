@@ -1,9 +1,10 @@
 <script lang="ts" setup>
 import Message from "./Message.vue"
-import { useChatStore } from "@/store/modules/chat"
+import { MessageData, useChatStore } from "@/store/modules/chat"
 import TextMsg from "./message-types/TextMsg.vue"
 import { ref, watchEffect } from "vue"
 
+useChatStore().getAllMessages()
 const msgs: any = ref(null)
 
 watchEffect(() => {
@@ -16,7 +17,7 @@ watchEffect(() => {
 
 <template>
   <el-scrollbar ref="msgs" class="msgs-container">
-    <Message v-for="msg in useChatStore().conversations[0].messages">
+    <Message v-for="msg in useChatStore().conversations.get(`abc@com`)">
       <TextMsg :type="msg.type" :content="msg.content" :sended-at="msg.sendedAt" :incoming="msg.incoming"></TextMsg>
     </Message>
   </el-scrollbar>

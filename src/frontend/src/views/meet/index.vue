@@ -5,6 +5,7 @@ import { useRouter } from "vue-router"
 import { useMeetStore } from "@/store/modules/meet"
 import { removeCurrentMeet, removeMeetToken, setCurrentMeet } from "@/utils/cache/cookies"
 import { connectWS } from "@/utils/websocket"
+import { setupMeetSocket } from "@/websocket/meet"
 
 interface MeetDetails {
   name: string
@@ -54,9 +55,7 @@ const joinMeetHelper = async () => {
 }
 useMeetStore().getRooms()
 
-connectWS()
-
-// sendWS()
+setupMeetSocket()
 </script>
 
 <template>

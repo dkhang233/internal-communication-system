@@ -1,10 +1,10 @@
-package com.backend;
+package com.securemeet;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class BackendApplicationTests {
+class TestMeetEventApplicationTests {
 
 	@Test
 	void contextLoads() {

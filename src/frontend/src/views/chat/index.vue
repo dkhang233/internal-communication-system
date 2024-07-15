@@ -12,6 +12,28 @@ const selectedContact = {
   online: true,
   messages: "hehe"
 }
+
+const handleNewestMessage = (key: string) => {
+  let lenght = useChatStore().conversations.get(key)?.length || 1
+  let msg: string =
+    useChatStore()
+      .conversations.get(key)
+      ?.at(lenght - 1)?.content || ""
+  return msg
+}
+
+const handleSendeAt = (key: string) => {
+  let lenght = useChatStore().conversations.get(key)?.length || 1
+  let sendedAt: string =
+    useChatStore()
+      .conversations.get(key)
+      ?.at(lenght - 1)?.sendedAt || "00:00"
+  return sendedAt
+}
+
+const handleClickContact = (key: string) => {
+  console.log(key)
+}
 </script>
 <template>
   <div class="app-container">
@@ -21,15 +43,17 @@ const selectedContact = {
         <input class="input" v-model="search" placeholder="Search..." /> -->
       <el-scrollbar class="list">
         <Contact
-          v-for="contact in useChatStore().contacts"
-          :name="contact.name"
-          :online="contact.online"
-          :newest-message="contact.newestMessage.content"
-          :sended-at="contact.newestMessage.sendedAt"
+          v-for="[key, value] in useChatStore().contacts"
+          :email="key"
+          :name="value.name"
+          :online="value.online"
+          :newest-message="handleNewestMessage(key)"
+          :sended-at="handleSendeAt(key)"
+          @click="handleClickContact(key)"
         />
       </el-scrollbar>
     </div>
-    <Conversation class="conversation" :name="selectedContact.name" :online="selectedContact.online"></Conversation>
+    <Conversation class="conversation" />
   </div>
 </template>
 <style lang="scss" scoped>

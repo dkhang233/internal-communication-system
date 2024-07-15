@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import StyledBadge from "./StyledBadge.vue"
 interface Props {
+  email: string
   name: string
   online: boolean
   newestMessage: string
@@ -8,6 +9,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  email: "user@com",
   name: "user",
   online: false,
   newestMessage: "",
@@ -52,6 +54,11 @@ const props = withDefaults(defineProps<Props>(), {
   border-radius: 0.5rem;
   margin: 10px;
   background-color: var(--el-bg-color-overlay);
+
+  &:hover {
+    cursor: pointer;
+    opacity: 0.7;
+  }
 }
 
 .box {

@@ -1,34 +1,13 @@
-import { IMessage, Stomp } from "@stomp/stompjs"
+import { messageCallbackType, Stomp } from "@stomp/stompjs"
 import { getToken } from "./cache/cookies"
 import SockJS from "sockjs-client"
-import { useMeetStore } from "@/store/modules/meet"
-import { RoomResponse, Room } from "@/api/meet/types/room"
 
-const headers = {
-  Authorization: getToken()
-}
-
-const handleRoomResponse = (input: RoomResponse): Room => {
-  return {
-    id: input.id,
-    name: input.name,
-    participants: input.participants,
-    createdAt: new Date(input.createdAt),
-    destroyedAt: new Date(input.destroyedAt)
-  }
-}
-const handleRoomCreated = function (messageOutput: IMessage) {
-  const room: Room = handleRoomResponse(JSON.parse(messageOutput.body))
-  useMeetStore().rooms.push(room)
-}
-
-const handleRoomDestroyed = function (messageOutput: IMessage) {
-  const room: Room = handleRoomResponse(JSON.parse(messageOutput.body))
-  useMeetStore().rooms.forEach((r) => {
-    if (r.id === room.id) {
-      r.destroyedAt = room.destroyedAt
-    }
-  })
+interface WebsocketRequest {
+  destination: string
+  body: string
+  isBinaryData: boolean
+  binaryData?: Uint8Array
+  // headers: { priority: "9" }
 }
 
 const stompClient = Stomp.over(function () {
@@ -37,33 +16,49 @@ const stompClient = Stomp.over(function () {
 
 stompClient.reconnect_delay = 5000
 
+const headers = {
+  Authorization: getToken()
+}
+
 const connectCallback = (frame: any) => {
   console.log("Connected: " + frame)
-  stompClient.subscribe("/topic/room/created", handleRoomCreated)
-  stompClient.subscribe("/topic/room/destroyed", handleRoomDestroyed)
 }
 
+// Handle Websocket Error
 stompClient.onWebSocketError = (error) => {
-  console.error("Error with websocket", error)
+  console.error("Error with websocket: ", error)
 }
 
+// Handle Stomp Error
 stompClient.onStompError = (frame) => {
   console.error("Broker reported error: " + frame.headers["message"])
   console.error("Additional details: " + frame.body)
 }
 
-export function connectWS() {
+// connect to Websocket Server
+const connectWS = () => {
   stompClient.connect(headers, connectCallback)
 }
 
-export function disconnectWS() {
+// disconnect websocket
+const disconnectWS = () => {
   stompClient.disconnect()
 }
 
-export function sendWS() {
+const sendWebsocketRequest = (request: WebsocketRequest) => {
   stompClient.publish({
-    destination: "/topic/chat",
-    body: "Hello world",
-    headers: { priority: "9" }
+    destination: request.destination,
+    body: request?.body,
+    binaryBody: request.binaryData,
+    headers: {
+      isBinaryData: request.isBinaryData + "",
+      priority: "9"
+    }
   })
 }
+// Subcribe to receive messages from specific broker
+const subscribeBroker = (path: string, callback: messageCallbackType) => {
+  stompClient.subscribe(path, callback)
+}
+
+export { connectWS, disconnectWS, sendWebsocketRequest, subscribeBroker }

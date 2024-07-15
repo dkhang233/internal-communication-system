@@ -14,6 +14,7 @@ export const useUserStore = defineStore("user", () => {
   const token = ref<string>(getToken() || "")
   const roles = ref<string[]>([])
   const username = ref<string>("")
+  const email = ref<string>("")
 
   const tagsViewStore = useTagsViewStore()
   const settingsStore = useSettingsStore()
@@ -27,6 +28,7 @@ export const useUserStore = defineStore("user", () => {
   /** Get user details */
   const getInfo = async () => {
     const { data } = await getUserInfoApi()
+    email.value = data.email
     username.value = data.username
     console.log(username.value)
     // Verify whether the returned roles is a non-empty array, otherwise insert a default role that has no effect to prevent the routing guard logic from entering an infinite loop.
@@ -78,7 +80,7 @@ export const useUserStore = defineStore("user", () => {
     }
   }
 
-  return { token, roles, username, login, getInfo, changeRoles, logout, resetToken }
+  return { token, roles, username, email, login, getInfo, changeRoles, logout, resetToken }
 })
 
 /** Used outside setup */

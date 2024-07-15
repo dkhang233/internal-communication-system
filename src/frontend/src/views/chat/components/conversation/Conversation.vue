@@ -2,17 +2,10 @@
 import Messages from "./Messages.vue"
 import MessageInput from "./MessageInput.vue"
 import StyledBadge from "../contact/StyledBadge.vue"
-interface Props {
-  name: string
-  online: boolean
-  messages: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  name: "user",
-  online: false,
-  messages: ""
-})
+import { useChatStore } from "@/store/modules/chat"
+import { ref } from "vue"
+const name = ref<String | undefined>(useChatStore().contacts.get(useChatStore().currentChatUser)?.name)
+const online = ref<boolean | undefined>(useChatStore().contacts.get(useChatStore().currentChatUser)?.online)
 </script>
 <template>
   <div class="conversation-container">
@@ -28,7 +21,7 @@ const props = withDefaults(defineProps<Props>(), {
         src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
       />
       <div class="info">
-        <div class="name">{{ name }}</div>
+        <div class="name">{{ name || "User" }}</div>
         <div class="status">{{ online ? "Online" : "Offline" }}</div>
       </div>
     </div>
