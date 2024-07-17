@@ -25,3 +25,11 @@ export function getUserInfoApi() {
     method: "get"
   })
 }
+
+/** Get user's contact */
+export function getContactData() {
+  return request<Login.ContactResponseData>({
+    url: "users/contacts",
+    method: "get"
+  })
+}

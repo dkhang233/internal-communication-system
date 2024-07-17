@@ -1,5 +1,3 @@
-import { MessageType } from "@/store/modules/chat"
-
 export interface MessageResponse {
   id: number
   sender: string

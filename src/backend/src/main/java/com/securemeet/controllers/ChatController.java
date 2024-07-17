@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,15 +42,16 @@ public class ChatController {
 
     // Lấy tất cả các tin nhắn liên quan đến người dùng đang đăng nhập
     @GetMapping("/messages")
-    public ApiResponseData<List<MessageResponse>> getAllMessages() {
-        List<MessageResponse> response = chatService.getAllMessages();
+    public ApiResponseData<List<Message>> getAllMessages() {
+        List<Message> response = chatService.getAllMessages();
         return new ApiResponseData<>(0, response, "");
     }
 
     // Lấy tất cả tin nhắn giữa người dùng đang đăng nhập và một người dùng khác
-    @GetMapping("/messages/user")
-    public ApiResponseData<List<Message>> getMessagesForSpecificUser(@RequestParam String id) {
-        List<Message> response = chatService.getMessageForSpecificUser(id);
+    @GetMapping("/messages/contact")
+    public ApiResponseData<List<Message>> getMessagesForSpecificUser(Authentication authentication,
+            @RequestParam String id) {
+        List<Message> response = chatService.getMessageForSpecificContact(authentication, id);
         return new ApiResponseData<>(0, response, "");
     }
 

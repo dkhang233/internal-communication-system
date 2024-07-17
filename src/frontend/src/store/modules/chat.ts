@@ -1,8 +1,6 @@
-import { getAllMessagesApi } from "@/api/chat"
-import { MessageResponse } from "@/api/chat/types/message"
 import { defineStore } from "pinia"
 import { ref } from "vue"
-import { useUserStore } from "./user"
+import { getContactData } from "@/api/login"
 
 export enum MessageType {
   TEXT = "text",
@@ -10,8 +8,10 @@ export enum MessageType {
 }
 
 interface Contact {
+  email: string
   name: string
   online: boolean
+  messages: MessageData[]
 }
 
 export interface MessageData {
@@ -26,14 +26,28 @@ export const handleSendedAt = (input: Date): string => {
 }
 
 export const useChatStore = defineStore("chat", () => {
-  const contacts = ref<Map<string, Contact>>(new Map<string, Contact>())
-  const conversations = ref<Map<string, MessageData[]>>(new Map<string, MessageData[]>())
+  const contacts = ref<Contact[]>([])
   const currentChatUser = ref<string>("")
-  const getAllMessages = async function () {
-    conversations.value.clear()
-    const { data } = await getAllMessagesApi()
-    data.forEach((msg) => {
-      let message: MessageData = {
+
+  const getContacts = async function () {
+    const { data } = await getContactData()
+    data.forEach((c) => {
+      let contact: Contact = {
+        email: c.contactId,
+        name: c.contactUsername,
+        online: c.status ? true : false,
+        messages: []
+      }
+      contacts.value.push(contact)
+    })
+  }
+
+  const hasNewMessage = ref<boolean>(false)
+  return { contacts, currentChatUser, hasNewMessage, getContacts }
+})
+
+/**
+ *  let message: MessageData = {
         type: MessageType.TEXT,
         content: msg.content,
         sendedAt: handleSendedAt(new Date(msg.sendedAt)),
@@ -66,10 +80,4 @@ export const useChatStore = defineStore("chat", () => {
           contacts.value.set(msg.sender, contact)
         }
       }
-    })
-    currentChatUser.value = contacts.value.keys().next().value
-  }
-
-  const hasNewMessage = ref<boolean>(false)
-  return { contacts, currentChatUser, conversations, hasNewMessage, getAllMessages }
-})
+ */

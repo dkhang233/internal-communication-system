@@ -13,23 +13,33 @@ import io.jsonwebtoken.ExpiredJwtException;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    // Xử lí các exception liên quan đến NOT_FOUND
+    @ExceptionHandler({ UsernameNotFoundException.class })
+    public ResponseEntity<ApiResponseData<String>> handleNotFoundException(UsernameNotFoundException ex) {
+        ApiResponseData<String> response = new ApiResponseData<>(HttpStatus.NOT_FOUND.value(), "", ex.getMessage());
+        return new ResponseEntity<ApiResponseData<String>>(response, HttpStatus.NOT_FOUND);
+    }
+
+    // Xử lí các exception liên quan đến BAD_REQUEST
+    @ExceptionHandler({ InvalidDataException.class })
+    public ResponseEntity<ApiResponseData<String>> handleBadRequestException(ExpiredJwtException ex) {
+        ApiResponseData<String> response = new ApiResponseData<>(HttpStatus.BAD_REQUEST.value(), "", ex.getMessage());
+        return new ResponseEntity<ApiResponseData<String>>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    // Xử lí các exception liên quan đến UNAUTHORIZED
+    @ExceptionHandler({ ExpiredJwtException.class })
+    public ResponseEntity<ApiResponseData<String>> handleUnauthorizedException(ExpiredJwtException ex) {
+        ApiResponseData<String> response = new ApiResponseData<>(HttpStatus.UNAUTHORIZED.value(), "", ex.getMessage());
+        return new ResponseEntity<ApiResponseData<String>>(response, HttpStatus.UNAUTHORIZED);
+    }
+
+    // Xử lí exception không thuộc các loại ở trên
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponseData<String>> handleException(Exception ex) {
         ApiResponseData<String> response = new ApiResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "",
                 ex.getMessage());
         return new ResponseEntity<ApiResponseData<String>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<ApiResponseData<String>> handleUserNotFoundException(UsernameNotFoundException ex) {
-        ApiResponseData<String> response = new ApiResponseData<>(HttpStatus.NOT_FOUND.value(), "", ex.getMessage());
-        return new ResponseEntity<ApiResponseData<String>>(response, HttpStatus.NOT_FOUND);
-    }
-
-    @ExceptionHandler({ ExpiredJwtException.class, InvalidDataException.class })
-    public ResponseEntity<ApiResponseData<String>> handleBadRequestException(ExpiredJwtException ex) {
-        ApiResponseData<String> response = new ApiResponseData<>(HttpStatus.BAD_REQUEST.value(), "", ex.getMessage());
-        return new ResponseEntity<ApiResponseData<String>>(response, HttpStatus.BAD_REQUEST);
     }
 
 }

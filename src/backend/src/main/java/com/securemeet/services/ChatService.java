@@ -2,9 +2,7 @@ package com.securemeet.services;
 
 import java.util.List;
 
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.securemeet.dtos.message.MessageDto;
@@ -24,10 +22,13 @@ public class ChatService {
     private final UserRepository userRepository;
 
     public MessageResponse handleMessage(MessageDto input) {
+        // Kiểm tra người gửi có tồn tại hay không
         User sender = userRepository.findById(input.getSender())
                 .orElseThrow(() -> new DataNotFoundException("Sender is incorrect"));
+        // Kiểm tra người nhận có tồn tại hay không
         User recipient = userRepository.findById(input.getRecipient())
                 .orElseThrow(() -> new DataNotFoundException("Recipient is incorrect"));
+        // Tạo Message và lưa vào db
         Message message = Message.builder()
                 .sender(sender.getEmail())
                 .recipient(recipient.getEmail())
@@ -36,6 +37,8 @@ public class ChatService {
                 .sendedAt(input.getSendedAt())
                 .build();
         message = messageRepository.save(message);
+
+        // Tạo MessageResponse để trả về cho client
         MessageResponse response = MessageResponse.builder()
                 .id(message.getId())
                 .sender(message.getSender())
@@ -49,20 +52,20 @@ public class ChatService {
         return response;
     }
 
-    public List<Message> getMessageForSpecificUser(String id) {
-        String myId = "";
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (!(authentication instanceof AnonymousAuthenticationToken)) {
-            myId = authentication.getName();
-        } else {
-            throw new RuntimeException("No User");
-        }
-        List<Message> result = messageRepository.getMessagesForSpecificUser(myId, id);
+    /*
+     * Lấy 20 messages mới nhất giữa người liên hệ có id = contactId và người dùng
+     */
+    public List<Message> getMessageForSpecificContact(Authentication authentication, String contactId) {
+        String myId = authentication.getName();
+        List<Message> result = messageRepository.getMessagesForSpecificContact(myId, contactId);
         return result;
     }
 
-    public List<MessageResponse> getAllMessages() {
-        List<MessageResponse> result = messageRepository.getAllMessages();
+    /**
+     * Lấy tất cả messages liên quan đến người dùng hiện tại
+     */
+    public List<Message> getAllMessages() {
+        List<Message> result = messageRepository.findAll();
         return result;
     }
 }
