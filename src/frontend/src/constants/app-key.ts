@@ -18,3 +18,5 @@ export const SIDEBAR_CLOSED = "closed"
 
 export type SidebarOpened = typeof SIDEBAR_OPENED
 export type SidebarClosed = typeof SIDEBAR_CLOSED
+
+export const WSPREFIX = "api/v1"

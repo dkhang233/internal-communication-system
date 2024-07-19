@@ -35,7 +35,13 @@ public class UserService {
         return result;
     }
 
-    public Contact addContact(Contact contact, Authentication authentication) {
+    public ContactResponse getContactByContactId(Authentication authentication, String contactId) {
+        ContactResponse res = contactRepository.findByOwnerIdAndContactId(authentication.getName(), contactId)
+                .orElseThrow(() -> new DataNotFoundException("Not found contact"));
+        return res;
+    }
+
+    public List<ContactResponse> addContact(Contact contact, Authentication authentication) {
         String ownerId = authentication.getName();
 
         // Kiểm tra xem liên hệ đã tồn tại chưa (đối với người dùng hiện tại)
@@ -43,6 +49,9 @@ public class UserService {
             throw new InvalidDataException("Contact ID is invalid"); // Nếu đã tồn tại => đưa ra exception
 
         // Nếu chưa tồn tại => lưu liên hệ
-        return contactRepository.save(contact);
+        contactRepository.save(contact);
+        ContactResponse res = contactRepository.findByOwnerIdAndContactId(ownerId, contact.getContactId())
+                .orElseThrow(() -> new DataNotFoundException("Not found contact"));
+        return List.of(res);
     }
 }

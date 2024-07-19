@@ -9,7 +9,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.securemeet.dtos.user.UserStatusDto;
-import com.securemeet.models.user.Contact;
 import com.securemeet.responses.ApiResponseData;
 import com.securemeet.responses.user.ContactResponse;
 import com.securemeet.services.UserService;
@@ -18,8 +17,6 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @RestController
@@ -43,7 +40,12 @@ public class UserController {
         return userStatusDto;
     }
 
-    // Lấy danh sách liên hệ cho người dùng hiện tại
+    /**
+     * Lấy danh sách liên hệ cho người dùng hiện tại
+     * 
+     * @param authentication
+     * @return
+     */
     @GetMapping("/contacts")
     public ApiResponseData<List<ContactResponse>> getContacts(Authentication authentication) {
         ApiResponseData<List<ContactResponse>> result = new ApiResponseData<>(0,
@@ -52,9 +54,13 @@ public class UserController {
     }
 
     // Thêm một liên hệ cho người dùng hiện tại
-    @PostMapping("/contacts")
-    public ApiResponseData<Contact> addContact(@RequestBody Contact contact, Authentication authentication) {
-        ApiResponseData<Contact> result = new ApiResponseData<>(0, userService.addContact(contact, authentication), "");
-        return result;
-    }
+    // @PostMapping("/contacts")
+    // public ApiResponseData<List<ContactResponse>> addContact(@RequestBody Contact
+    // contact,
+    // Authentication authentication) {
+    // ApiResponseData<List<ContactResponse>> result = new ApiResponseData<>(0,
+    // userService.addContact(contact, authentication), "");
+    // return result;
+    // }
+
 }

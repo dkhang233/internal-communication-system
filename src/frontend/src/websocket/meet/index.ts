@@ -1,10 +1,6 @@
 import { Room, RoomResponse } from "@/api/meet/types/room"
 import { useMeetStore } from "@/store/modules/meet"
-import { subscribeBroker } from "@/utils/websocket"
 import { IMessage } from "@stomp/stompjs"
-
-const createdRoomPath = "/topic/room/created"
-const destroyedRoomPath = "/topic/room/destroyed"
 
 const handleRoomCreated = (messageOutput: IMessage) => {
   const room: Room = handleRoomResponse(JSON.parse(messageOutput.body))
@@ -32,9 +28,4 @@ const handleRoomResponse = (input: RoomResponse): Room => {
   }
 }
 
-const setupMeetSocket = () => {
-  subscribeBroker(createdRoomPath, handleRoomCreated)
-  subscribeBroker(destroyedRoomPath, handleRoomDestroyed)
-}
-
-export { setupMeetSocket }
+export { handleRoomCreated, handleRoomDestroyed }

@@ -3,9 +3,15 @@ import Messages from "./Messages.vue"
 import MessageInput from "./MessageInput.vue"
 import StyledBadge from "../contact/StyledBadge.vue"
 import { useChatStore } from "@/store/modules/chat"
-import { ref } from "vue"
-const name = ref<String | undefined>(useChatStore().contacts.get(useChatStore().currentChatUser)?.name)
-const online = ref<boolean | undefined>(useChatStore().contacts.get(useChatStore().currentChatUser)?.online)
+import { ref, watchEffect } from "vue"
+
+const name = ref<String>("User")
+const online = ref<boolean>(false)
+
+watchEffect(() => {
+  name.value = useChatStore().contacts[useChatStore().currentChatUser]?.name || "User"
+  online.value = useChatStore().contacts[useChatStore().currentChatUser]?.online || false
+})
 </script>
 <template>
   <div class="conversation-container">

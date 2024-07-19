@@ -7,6 +7,11 @@ export interface LoginRequestData {
   code: string
 }
 
+export interface ContactRequestData {
+  ownerId: string
+  contactId: string
+  contactTime: Date
+}
 export type LoginCodeResponseData = ApiResponseData<string>
 
 export type LoginResponseData = ApiResponseData<{ token: string }>

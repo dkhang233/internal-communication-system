@@ -1,5 +1,6 @@
 import { request } from "@/utils/service"
 import type * as Login from "./types/login"
+import { ContactRequestData } from "./types/login"
 
 /** Get login verification code */
 export function getLoginCodeApi() {
@@ -26,10 +27,27 @@ export function getUserInfoApi() {
   })
 }
 
-/** Get user's contact */
-export function getContactData() {
+/** Get all user's contacts */
+export function getAllContactData() {
   return request<Login.ContactResponseData>({
     url: "users/contacts",
     method: "get"
+  })
+}
+
+// export function addContactData(contact: ContactRequestData) {
+//   return request<Login.ContactResponseData>({
+//     url: "users/contacts",
+//     method: "post",
+//     data: contact
+//   })
+// }
+
+/** Get specific user's contact */
+export function getContactData(contactId: string) {
+  return request<Login.ContactResponseData>({
+    url: "users/contacts",
+    method: "get",
+    params: { contactId }
   })
 }

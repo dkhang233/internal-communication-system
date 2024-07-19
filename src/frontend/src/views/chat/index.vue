@@ -4,36 +4,18 @@ import Contact from "./components/contact/Contact.vue"
 import Conversation from "./components/conversation/Conversation.vue"
 import { useDevice } from "@/hooks/useDevice"
 import { useChatStore } from "@/store/modules/chat"
+import { useUserStore } from "@/store/modules/user"
+
+useChatStore().getContacts()
 const search = ref<string>("")
 const { isMobile } = useDevice()
 
-const selectedContact = {
-  name: "Lewandoski",
-  online: true,
-  messages: "hehe"
+const handleClickContact = (key: number) => {
+  useChatStore().currentChatUser = key - 1
+  useChatStore().hasNewMessage = true
 }
 
-const handleNewestMessage = (key: string) => {
-  let lenght = useChatStore().conversations.get(key)?.length || 1
-  let msg: string =
-    useChatStore()
-      .conversations.get(key)
-      ?.at(lenght - 1)?.content || ""
-  return msg
-}
-
-const handleSendeAt = (key: string) => {
-  let lenght = useChatStore().conversations.get(key)?.length || 1
-  let sendedAt: string =
-    useChatStore()
-      .conversations.get(key)
-      ?.at(lenght - 1)?.sendedAt || "00:00"
-  return sendedAt
-}
-
-const handleClickContact = (key: string) => {
-  console.log(key)
-}
+console.log(useUserStore().email)
 </script>
 <template>
   <div class="app-container">
@@ -42,15 +24,7 @@ const handleClickContact = (key: string) => {
       <!-- <el-icon class="icon-wrapper"><Search /></el-icon>
         <input class="input" v-model="search" placeholder="Search..." /> -->
       <el-scrollbar class="list">
-        <Contact
-          v-for="[key, value] in useChatStore().contacts"
-          :email="key"
-          :name="value.name"
-          :online="value.online"
-          :newest-message="handleNewestMessage(key)"
-          :sended-at="handleSendeAt(key)"
-          @click="handleClickContact(key)"
-        />
+        <Contact v-for="index in useChatStore().contacts.length" :index="index" @click="handleClickContact(index)" />
       </el-scrollbar>
     </div>
     <Conversation class="conversation" />

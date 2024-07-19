@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { MessageType } from "@/store/modules/chat"
+import { MessageType } from "@/api/chat/types/message"
 
 interface Props {
   type: MessageType

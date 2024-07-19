@@ -31,11 +31,15 @@ public class SecurityConfig {
                 .cors(cors -> cors.disable())
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers(HttpMethod.OPTIONS).permitAll();
-                    auth.requestMatchers(apiPrefix + "/errors/**").permitAll();
-                    auth.requestMatchers(apiPrefix + "/users/login", apiPrefix + "/users/signup",
-                            apiPrefix + "/users/code").permitAll();
-                    auth.requestMatchers("/websocket/**").permitAll();
-                    auth.anyRequest().authenticated();
+                    auth.requestMatchers(
+                            apiPrefix + "/users/login",
+                            apiPrefix + "/users/code",
+                            apiPrefix + "/users/signup",
+                            apiPrefix + "/errors/**",
+                            "/websocket/**",
+                            "/topic/**", "/queue/**", "/user/**", "/app/**",
+                            "/chat/**", "/messages/**")
+                            .permitAll().anyRequest().authenticated();
                 })
                 .sessionManagement(s -> {
                     s.sessionCreationPolicy(SessionCreationPolicy.STATELESS);

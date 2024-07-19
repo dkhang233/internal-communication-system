@@ -1,5 +1,6 @@
 package com.securemeet.services;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.security.core.Authentication;
@@ -8,10 +9,11 @@ import org.springframework.stereotype.Service;
 import com.securemeet.dtos.message.MessageDto;
 import com.securemeet.exceptionhandlers.DataNotFoundException;
 import com.securemeet.models.message.Message;
+import com.securemeet.models.user.Contact;
 import com.securemeet.models.user.User;
+import com.securemeet.repositories.ContactRepository;
 import com.securemeet.repositories.MessageRepository;
 import com.securemeet.repositories.UserRepository;
-import com.securemeet.responses.message.MessageResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,14 +22,18 @@ import lombok.RequiredArgsConstructor;
 public class ChatService {
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
+    private final ContactRepository contactRepository;
 
-    public MessageResponse handleMessage(MessageDto input) {
+    public Message handleMessage(MessageDto input) {
         // Kiểm tra người gửi có tồn tại hay không
         User sender = userRepository.findById(input.getSender())
                 .orElseThrow(() -> new DataNotFoundException("Sender is incorrect"));
         // Kiểm tra người nhận có tồn tại hay không
         User recipient = userRepository.findById(input.getRecipient())
                 .orElseThrow(() -> new DataNotFoundException("Recipient is incorrect"));
+
+        // Kiểm tra liên hệ
+        checkContact(sender.getEmail(), recipient.getEmail(), input.getSendedAt());
         // Tạo Message và lưa vào db
         Message message = Message.builder()
                 .sender(sender.getEmail())
@@ -37,19 +43,8 @@ public class ChatService {
                 .sendedAt(input.getSendedAt())
                 .build();
         message = messageRepository.save(message);
-
-        // Tạo MessageResponse để trả về cho client
-        MessageResponse response = MessageResponse.builder()
-                .id(message.getId())
-                .sender(message.getSender())
-                .recipient(message.getRecipient())
-                .type(message.getType())
-                .content(message.getContent())
-                .sendedAt(message.getSendedAt())
-                .senderUsername(sender.getUsername())
-                .recipientUsername(recipient.getUsername())
-                .build();
-        return response;
+        // trả về cho người dùng
+        return message;
     }
 
     /*
@@ -67,5 +62,26 @@ public class ChatService {
     public List<Message> getAllMessages() {
         List<Message> result = messageRepository.findAll();
         return result;
+    }
+
+    /*
+     * Tồn tại liên hệ giữa người gửi tin nhắn và người nhận tin nhắn
+     * => Gửi tin nhắn
+     * Nếu chưa tồn tại => Lưu liên hệ => Gửi tin nhắn
+     */
+
+    private void checkContact(String sender, String receiver, Date contactTime) {
+
+        // Lưu liên hệ cho người gửi tin nhắn
+        if (contactRepository.findByOwnerIdAndContactId(sender, receiver).isEmpty()) {
+            Contact contact = Contact.builder().ownerId(sender).contactId(receiver).contactTime(contactTime).build();
+            contactRepository.save(contact);
+        }
+
+        // Lưu liên hệ cho người nhận tin nhắn
+        if (contactRepository.findByOwnerIdAndContactId(receiver, sender).isEmpty()) {
+            Contact contact = Contact.builder().ownerId(receiver).contactId(sender).contactTime(contactTime).build();
+            contactRepository.save(contact);
+        }
     }
 }

@@ -1,17 +1,13 @@
 import { defineStore } from "pinia"
 import { ref } from "vue"
-import { getContactData } from "@/api/login"
+import { getAllContactData } from "@/api/login"
+import { getMessageForSpecificContactApi } from "@/api/chat"
+import { MessageType } from "@/api/chat/types/message"
 
-export enum MessageType {
-  TEXT = "text",
-  LINK = "link"
-}
-
-interface Contact {
+export interface Contact {
   email: string
   name: string
   online: boolean
-  messages: MessageData[]
 }
 
 export interface MessageData {
@@ -27,57 +23,37 @@ export const handleSendedAt = (input: Date): string => {
 
 export const useChatStore = defineStore("chat", () => {
   const contacts = ref<Contact[]>([])
-  const currentChatUser = ref<string>("")
+  const conversations = ref<Map<string, MessageData[]>>(new Map())
+  const currentChatUser = ref<number>(0)
+  const hasNewMessage = ref<boolean>(false)
 
   const getContacts = async function () {
-    const { data } = await getContactData()
+    contacts.value = []
+    conversations.value.clear()
+    const { data } = await getAllContactData()
     data.forEach((c) => {
       let contact: Contact = {
         email: c.contactId,
         name: c.contactUsername,
-        online: c.status ? true : false,
-        messages: []
+        online: c.status ? true : false
       }
       contacts.value.push(contact)
+      getMessageForSpecificContactApi(c.contactId).then(function ({ data }) {
+        let msgs: MessageData[] = []
+        data.forEach((msg) => {
+          let res: MessageData = {
+            type: msg.type,
+            content: msg.content,
+            sendedAt: handleSendedAt(new Date(msg.sendedAt)),
+            incoming: msg.sender === contact.email ? true : false
+          }
+          msgs.push(res)
+        })
+        msgs.reverse()
+        conversations.value.set(c.contactId, msgs)
+      })
     })
+    hasNewMessage.value = true
   }
-
-  const hasNewMessage = ref<boolean>(false)
-  return { contacts, currentChatUser, hasNewMessage, getContacts }
+  return { contacts, conversations, currentChatUser, hasNewMessage, getContacts }
 })
-
-/**
- *  let message: MessageData = {
-        type: MessageType.TEXT,
-        content: msg.content,
-        sendedAt: handleSendedAt(new Date(msg.sendedAt)),
-        incoming: true
-      }
-      if (useUserStore().email === msg.sender) {
-        message.incoming = false
-        let messages: MessageData[] = conversations.value.get(msg.recipient) || []
-        messages.push(message)
-        conversations.value.set(msg.recipient, messages)
-
-        if (!contacts.value.has(msg.recipient)) {
-          let contact: Contact = {
-            name: msg.recipientUsername,
-            online: true
-          }
-          contacts.value.set(msg.recipient, contact)
-        }
-      } else {
-        message.incoming = true
-        let messages: MessageData[] = conversations.value.get(msg.sender) || []
-        messages.push(message)
-        conversations.value.set(msg.sender, messages)
-
-        if (!contacts.value.has(msg.sender)) {
-          let contact: Contact = {
-            name: msg.senderUsername,
-            online: true
-          }
-          contacts.value.set(msg.sender, contact)
-        }
-      }
- */

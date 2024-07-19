@@ -1,10 +1,13 @@
 <script lang="ts" setup>
 import { ref, onMounted } from "vue"
-import { useChatStore, MessageType, handleSendedAt, MessageData } from "@/store/modules/chat"
+import { useChatStore, handleSendedAt, MessageData } from "@/store/modules/chat"
 import EmojiPicker from "vue3-emoji-picker"
+import { MessageResponse, MessageType } from "@/api/chat/types/message"
+import { useUserStore } from "@/store/modules/user"
+import { sendMessage } from "@/websocket/chat"
 
 const msgInput = ref(null)
-const input = ref<string>("Xin chào")
+const input = ref<string>("")
 const showEmoji = ref<boolean>(false)
 
 const onSelectEmoji = (emoji: any) => {
@@ -18,15 +21,27 @@ const onSelectEmoji = (emoji: any) => {
 
 const sendMsg = () => {
   if (input && input.value !== "") {
-    const message: MessageData = {
+    let message: MessageData = {
       type: MessageType.TEXT,
       content: input.value,
       sendedAt: handleSendedAt(new Date()),
       incoming: false
     }
-    useChatStore().conversations.get("abc@com")?.push(message)
+
+    let currentContact = useChatStore().contacts[useChatStore().currentChatUser]
+    let msgs = useChatStore().conversations.get(currentContact.email) || []
+    msgs.push(message)
+    useChatStore().conversations.set(currentContact.email, msgs)
     input.value = ""
-    setTimeout(() => (useChatStore().hasNewMessage = true), 100)
+    useChatStore().hasNewMessage = true
+    let messageRequest: MessageResponse = {
+      sender: useUserStore().email,
+      recipient: currentContact.email,
+      type: message.type,
+      content: message.content,
+      sendedAt: new Date()
+    }
+    sendMessage(messageRequest)
   }
 }
 

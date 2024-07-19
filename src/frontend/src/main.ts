@@ -17,6 +17,7 @@ import "vxe-table/lib/style.css"
 import "vxe-table-plugin-element/dist/style.css"
 import "@/styles/index.scss"
 import "vue3-emoji-picker/css"
+import { connectWS } from "./utils/websocket"
 
 const app = createApp(App)
 
@@ -27,6 +28,8 @@ loadSvg(app)
 /** Load custom instructions */
 loadDirectives(app)
 
+/** Connect to websocket */
+connectWS()
 app.use(store).use(router)
 router.isReady().then(() => {
   app.mount("#app")

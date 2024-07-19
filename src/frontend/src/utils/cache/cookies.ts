@@ -34,3 +34,15 @@ export const setMeetToken = (token: string) => {
 export const removeMeetToken = () => {
   Cookies.remove(CacheKey.MEET_TOKEN)
 }
+
+export const setEmail = (email: string) => {
+  Cookies.set(CacheKey.EMAIL, email)
+}
+
+export const getEmail = () => {
+  return Cookies.get(CacheKey.EMAIL)
+}
+
+export const removeEmail = () => {
+  Cookies.remove(CacheKey.EMAIL)
+}

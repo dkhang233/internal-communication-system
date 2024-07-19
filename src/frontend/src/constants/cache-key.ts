@@ -10,6 +10,7 @@ class CacheKey {
   static readonly VISITED_VIEWS = `${SYSTEM_NAME}-visited-views-key`
   static readonly CACHED_VIEWS = `${SYSTEM_NAME}-cached-views-key`
   static readonly CURRENT_MEET = `${SYSTEM_NAME}-current-meet`
+  static readonly EMAIL = `${SYSTEM_NAME}-email`
 }
 
 export default CacheKey

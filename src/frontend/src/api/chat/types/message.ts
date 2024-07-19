@@ -1,12 +1,15 @@
+export enum MessageType {
+  TEXT = 0,
+  LINK = 1
+}
+
 export interface MessageResponse {
-  id: number
+  id?: number
   sender: string
   recipient: string
-  type: string
+  type: MessageType
   content: string
   sendedAt: Date
-  senderUsername: string
-  recipientUsername: string
 }
 
 export type MessageResponseData = ApiResponseData<MessageResponse[]>

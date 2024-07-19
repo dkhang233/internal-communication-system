@@ -48,8 +48,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
         config.enableSimpleBroker("/topic", "/queue", "/user");
-        config.setApplicationDestinationPrefixes("/{apiPrefix}");
-        // config.setPreservePublishOrder(true);
+        config.setApplicationDestinationPrefixes("/app");
     }
 
     @Override
@@ -68,27 +67,31 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 log.debug("Headers: {}", accessor);
                 if (StompCommand.CONNECT.equals(accessor.getCommand())) {
                     String authorizationHeader = accessor.getFirstNativeHeader("Authorization");
-                    if (authorizationHeader == null)
-                        log.info("error message");
-                    // throw new RuntimeException("Access Denied");
-                    final String token = authorizationHeader;
-                    final String userEmail = jwtService.extractUsername(token);
-                    if (userEmail != null) {
-                        UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
-                        if (jwtService.isTokenValid(token, userDetails)) {
-                            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                                    userDetails,
-                                    null, userDetails.getAuthorities());
-                            // SecurityContextHolder.getContext().setAuthentication(authToken);
-                            accessor.setUser(authToken);
+                    if (authorizationHeader != null) {
+                        final String token = authorizationHeader;
+                        final String userEmail = jwtService.extractUsername(token);
+                        if (userEmail != null) {
+                            UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+                            if (jwtService.isTokenValid(token, userDetails)) {
+                                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                                        userDetails,
+                                        null, userDetails.getAuthorities());
+                                // SecurityContextHolder.getContext().setAuthentication(authToken);
+                                accessor.setUser(authToken);
+                            }
                         }
                     }
+                    log.debug("error connect");
                 }
                 // if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
                 // Principal authToken = accessor.getUser();
                 // log.debug(authToken.toString());
                 // }
-                accessor.setLeaveMutable(true);
+                try {
+                    accessor.setLeaveMutable(true);
+                } catch (Exception e) {
+                    log.debug(e.getMessage());
+                }
                 return MessageBuilder.createMessage(message.getPayload(), accessor.getMessageHeaders());
             }
         });

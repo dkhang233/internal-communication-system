@@ -1,6 +1,9 @@
-import { messageCallbackType, Stomp } from "@stomp/stompjs"
-import { getToken } from "./cache/cookies"
+import { Stomp } from "@stomp/stompjs"
+import { getEmail, getToken } from "./cache/cookies"
 import SockJS from "sockjs-client"
+import { handleReceiveMessage } from "@/websocket/chat"
+import { handleRoomCreated, handleRoomDestroyed } from "@/websocket/meet"
+import { ElMessage } from "element-plus"
 
 interface WebsocketRequest {
   destination: string
@@ -16,28 +19,31 @@ const stompClient = Stomp.over(function () {
 
 stompClient.reconnect_delay = 5000
 
+const token = getToken()
 const headers = {
-  Authorization: getToken()
+  Authorization: token
 }
 
 const connectCallback = (frame: any) => {
-  console.log("Connected: " + frame)
+  stompClient.subscribe("/topic/room/created", handleRoomCreated)
+  stompClient.subscribe("/topic/room/destroyed", handleRoomDestroyed)
+  stompClient.subscribe(`/user/${getEmail()}/queue/receiveMsg`, handleReceiveMessage)
 }
 
 // Handle Websocket Error
 stompClient.onWebSocketError = (error) => {
-  console.error("Error with websocket: ", error)
+  ElMessage.error("Error with websocket: ", error)
 }
 
 // Handle Stomp Error
 stompClient.onStompError = (frame) => {
-  console.error("Broker reported error: " + frame.headers["message"])
-  console.error("Additional details: " + frame.body)
+  ElMessage.error("Broker reported error: " + frame.headers["message"])
+  ElMessage.error("Additional details: " + frame.body)
 }
 
 // connect to Websocket Server
 const connectWS = () => {
-  stompClient.connect(headers, connectCallback)
+  stompClient.connected || token === undefined || stompClient.connect(headers, connectCallback)
 }
 
 // disconnect websocket
@@ -48,17 +54,9 @@ const disconnectWS = () => {
 const sendWebsocketRequest = (request: WebsocketRequest) => {
   stompClient.publish({
     destination: request.destination,
-    body: request?.body,
-    binaryBody: request.binaryData,
-    headers: {
-      isBinaryData: request.isBinaryData + "",
-      priority: "9"
-    }
+    body: request?.body
   })
-}
-// Subcribe to receive messages from specific broker
-const subscribeBroker = (path: string, callback: messageCallbackType) => {
-  stompClient.subscribe(path, callback)
+  console.log(request.body)
 }
 
-export { connectWS, disconnectWS, sendWebsocketRequest, subscribeBroker }
+export { connectWS, disconnectWS, sendWebsocketRequest }
