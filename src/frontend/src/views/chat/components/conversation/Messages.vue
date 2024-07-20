@@ -10,7 +10,7 @@ watchEffect(() => {
   if (useChatStore().hasNewMessage) {
     setTimeout(() => {
       // msgs?.value?.scrollTo({ top: msgs?.value?.wrapRef?.scrollHeight, behavior: "smooth" })
-      msgs?.value?.setScrollTop(msgs?.value?.wrapRef?.scrollHeight)
+      msgs.value?.setScrollTop(msgs.value.wrapRef?.scrollHeight)
       useChatStore().hasNewMessage = false
     }, 50)
   }
@@ -21,7 +21,7 @@ watchEffect(() => {
 })
 
 onMounted(() => {
-  msgs?.value?.setScrollTop(msgs?.value?.wrapRef?.scrollHeight)
+  msgs?.value?.setScrollTop(msgs.value.wrapRef?.scrollHeight)
 })
 </script>
 

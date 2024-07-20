@@ -5,12 +5,14 @@ import java.util.List;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import com.securemeet.dtos.user.UserStatusDto;
 import com.securemeet.exceptionhandlers.DataNotFoundException;
 import com.securemeet.exceptionhandlers.InvalidDataException;
 import com.securemeet.models.user.Contact;
 import com.securemeet.repositories.ContactRepository;
 import com.securemeet.repositories.UserRepository;
 import com.securemeet.responses.user.ContactResponse;
+import com.securemeet.responses.user.UserInfor;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,25 +22,40 @@ public class UserService {
     private final UserRepository userRepository;
     private final ContactRepository contactRepository;
 
-    public void setStatus(String email, int status) {
+    // Thay đổi trạng thái(status) của người dùng
+    public UserStatusDto setStatus(String email, int status) {
         userRepository.findByEmail(email).orElseThrow(() -> new DataNotFoundException("Not found user"));
         if (status == 0 || status == 1) {
             userRepository.setStatus(email, status);
         } else {
             throw new InvalidDataException("User status is invalid"); // Nếu status không hợp lệ => đưa ra exception
         }
+
+        return new UserStatusDto(email, status);
     }
 
+    // Lấy thông tin về các liên hệ của người dùng hiện tại
     public List<ContactResponse> getContacts(Authentication authentication) {
         String ownerId = authentication.getName();
         List<ContactResponse> result = contactRepository.findByOwnerId(ownerId);
         return result;
     }
 
+    // Lấy thông tin về liên hệ có Id xác định của người dùng hiện tại
     public ContactResponse getContactByContactId(Authentication authentication, String contactId) {
         ContactResponse res = contactRepository.findByOwnerIdAndContactId(authentication.getName(), contactId)
                 .orElseThrow(() -> new DataNotFoundException("Not found contact"));
         return res;
+    }
+
+    // Tìm kiếm người dùng
+    public List<UserInfor> searchContact(String searchContact) {
+        searchContact = searchContact.trim();
+        if (searchContact.isEmpty()) {
+            return List.of();
+        }
+        List<UserInfor> result = userRepository.searchUser("%" + searchContact + "%");
+        return result;
     }
 
     public List<ContactResponse> addContact(Contact contact, Authentication authentication) {

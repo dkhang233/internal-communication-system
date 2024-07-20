@@ -2,15 +2,17 @@ package com.securemeet.controllers;
 
 import java.util.List;
 
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.context.event.EventListener;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.socket.messaging.SessionConnectedEvent;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import com.securemeet.dtos.user.UserStatusDto;
 import com.securemeet.responses.ApiResponseData;
 import com.securemeet.responses.user.ContactResponse;
+import com.securemeet.responses.user.UserInfor;
 import com.securemeet.services.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,20 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @CrossOrigin(originPatterns = "**")
 public class UserController {
     private final UserService userService;
-
-    /**
-     * gửi thông tin đến tất cả người dùng về
-     * trạng thái của một người dùng khi thay đổi
-     * 
-     * @param userStatusDto
-     * @return
-     */
-    @MessageMapping("/user/status/{email}")
-    @SendTo("/topic/status")
-    public UserStatusDto handleUserStatus(@Payload UserStatusDto userStatusDto) {
-        userService.setStatus(userStatusDto.getEmail(), userStatusDto.getStatus());
-        return userStatusDto;
-    }
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     /**
      * Lấy danh sách liên hệ cho người dùng hiện tại
@@ -51,6 +41,39 @@ public class UserController {
         ApiResponseData<List<ContactResponse>> result = new ApiResponseData<>(0,
                 userService.getContacts(authentication), "");
         return result;
+    }
+
+    @GetMapping("/search")
+    public ApiResponseData<List<UserInfor>> searchUser(@RequestParam String keyword) {
+        ApiResponseData<List<UserInfor>> result = new ApiResponseData<>(0,
+                userService.searchContact(keyword), "");
+        return result;
+    }
+
+    /**
+     * Khi thiết lập kết nối websocket thành công
+     * => người dùng online
+     * => gửi thông tin này đến người dùng khác
+     * 
+     * @param event
+     */
+    @EventListener
+    public void handleOnlineStatus(SessionConnectedEvent event) {
+        UserStatusDto userStatusDto = userService.setStatus(event.getUser().getName(), 1);
+        simpMessagingTemplate.convertAndSend("/topic/user/status", userStatusDto);
+    }
+
+    /**
+     * Khi ngắt kết nối websocket thành công
+     * => người dùng offline
+     * => gửi thông tin này đến người dùng khác
+     * 
+     * @param event
+     */
+    @EventListener
+    public void handleOfflineStatus(SessionDisconnectEvent event) {
+        UserStatusDto userStatusDto = userService.setStatus(event.getUser().getName(), 0);
+        simpMessagingTemplate.convertAndSend("/topic/user/status", userStatusDto);
     }
 
     // Thêm một liên hệ cho người dùng hiện tại

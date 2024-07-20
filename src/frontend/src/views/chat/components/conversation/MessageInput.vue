@@ -81,7 +81,7 @@ const sendMsg = () => {
   bottom: 12%;
 
   &-btn {
-    width: 35px;
+    width: 30px;
     cursor: pointer;
     &:hover {
       color: black;
@@ -96,9 +96,13 @@ const sendMsg = () => {
     justify-content: center;
   }
   margin: 0px 8px;
-  width: 40rem;
-  @media screen and (max-width: 500px) {
-    width: 18rem;
+  width: 35rem;
+  @media screen and (max-width: 665px) and (min-width: 450px) {
+    width: 25rem;
+  }
+
+  @media screen and (max-width: 450px) {
+    width: 17rem;
   }
 }
 
@@ -108,4 +112,3 @@ const sendMsg = () => {
   background-color: var(--el-color-primary);
 }
 </style>
-onMounted,import { log } from "console";import { on } from "events";

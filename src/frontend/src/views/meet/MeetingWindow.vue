@@ -1,9 +1,8 @@
 <script lang="ts" setup>
-import { ref, watchEffect } from "vue"
+import { watchEffect } from "vue"
 import Meet from "./components/Meet.vue"
 import { useUserStore } from "@/store/modules/user"
 import { getCurrentMeet, getMeetToken } from "@/utils/cache/cookies"
-import { env } from "process"
 
 const domain: string = import.meta.env.VITE_MEET_DOMAIN
 const meetToken: string = getMeetToken() || ""

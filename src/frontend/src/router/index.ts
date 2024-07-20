@@ -98,7 +98,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         name: "chat",
         meta: {
           title: "Chat",
-          svgIcon: "link"
+          svgIcon: "chat"
         }
       }
     ]

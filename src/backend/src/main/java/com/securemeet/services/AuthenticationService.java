@@ -1,5 +1,7 @@
 package com.securemeet.services;
 
+import java.util.Date;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,6 +24,7 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
+    // Đăng kí
     public User signup(RegisterUserDto input) {
         if (userRepository.findByEmail(input.getEmail()).isPresent()) {
             throw new RuntimeException("Email has been used");
@@ -36,18 +39,24 @@ public class AuthenticationService {
         return userRepository.save(user);
     }
 
+    // Xác thực khi người dùng đăng nhập
     public User authenticate(LoginUserDto loginUserDto) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginUserDto.getEmail(), loginUserDto.getPassword()));
+
+        // Cập nhập thời gian lần cuối đăng nhập
+        userRepository.setLastLoginTime(loginUserDto.getEmail(), new Date());
+
         return userRepository.findByEmail(loginUserDto.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("Not found user"));
     }
 
+    // Lấy thông tin người dùng hiện tại
     public UserInfor getUserInfor(Authentication authentication) {
         String email = authentication.getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Not found user"));
         int[] roles = { user.getRole() };
-        return new UserInfor(user.getUsername(), user.getName(), roles);
+        return UserInfor.builder().email(user.getUsername()).username(user.getName()).roles(roles).build();
     }
 }

@@ -4,6 +4,7 @@ import SockJS from "sockjs-client"
 import { handleReceiveMessage } from "@/websocket/chat"
 import { handleRoomCreated, handleRoomDestroyed } from "@/websocket/meet"
 import { ElMessage } from "element-plus"
+import { handleReceiveUserStatus } from "@/websocket/user"
 
 interface WebsocketRequest {
   destination: string
@@ -19,15 +20,11 @@ const stompClient = Stomp.over(function () {
 
 stompClient.reconnect_delay = 5000
 
-const token = getToken()
-const headers = {
-  Authorization: token
-}
-
 const connectCallback = (frame: any) => {
   stompClient.subscribe("/topic/room/created", handleRoomCreated)
   stompClient.subscribe("/topic/room/destroyed", handleRoomDestroyed)
   stompClient.subscribe(`/user/${getEmail()}/queue/receiveMsg`, handleReceiveMessage)
+  stompClient.subscribe("/topic/user/status", handleReceiveUserStatus)
 }
 
 // Handle Websocket Error
@@ -38,12 +35,18 @@ stompClient.onWebSocketError = (error) => {
 // Handle Stomp Error
 stompClient.onStompError = (frame) => {
   ElMessage.error("Broker reported error: " + frame.headers["message"])
-  ElMessage.error("Additional details: " + frame.body)
 }
 
 // connect to Websocket Server
 const connectWS = () => {
-  stompClient.connected || token === undefined || stompClient.connect(headers, connectCallback)
+  stompClient.connected ||
+    !getToken() ||
+    stompClient.connect(
+      {
+        Authorization: getToken()
+      },
+      connectCallback
+    )
 }
 
 // disconnect websocket

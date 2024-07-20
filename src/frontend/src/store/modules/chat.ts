@@ -8,6 +8,7 @@ export interface Contact {
   email: string
   name: string
   online: boolean
+  show: boolean
 }
 
 export interface MessageData {
@@ -26,6 +27,7 @@ export const useChatStore = defineStore("chat", () => {
   const conversations = ref<Map<string, MessageData[]>>(new Map())
   const currentChatUser = ref<number>(0)
   const hasNewMessage = ref<boolean>(false)
+  const showSendNewMessage = ref<boolean>(false)
 
   const getContacts = async function () {
     contacts.value = []
@@ -35,7 +37,8 @@ export const useChatStore = defineStore("chat", () => {
       let contact: Contact = {
         email: c.contactId,
         name: c.contactUsername,
-        online: c.status ? true : false
+        online: c.status ? true : false,
+        show: true
       }
       contacts.value.push(contact)
       getMessageForSpecificContactApi(c.contactId).then(function ({ data }) {
@@ -55,5 +58,5 @@ export const useChatStore = defineStore("chat", () => {
     })
     hasNewMessage.value = true
   }
-  return { contacts, conversations, currentChatUser, hasNewMessage, getContacts }
+  return { contacts, conversations, currentChatUser, hasNewMessage, getContacts, showSendNewMessage }
 })

@@ -9,7 +9,7 @@ import { loginApi, getUserInfoApi } from "@/api/login"
 import { type LoginRequestData } from "@/api/login/types/login"
 import routeSettings from "@/config/route"
 import Roles from "@/constants/roles"
-import { disconnectWS } from "@/utils/websocket"
+import { connectWS, disconnectWS } from "@/utils/websocket"
 
 export const useUserStore = defineStore("user", () => {
   const token = ref<string>(getToken() || "")
@@ -25,6 +25,9 @@ export const useUserStore = defineStore("user", () => {
     const { data } = await loginApi({ email, password, code })
     setToken(data.token)
     token.value = data.token
+
+    // Init websocket connection
+    connectWS()
   }
   /** Get user details */
   const getInfo = async () => {
