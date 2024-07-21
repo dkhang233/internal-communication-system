@@ -5,17 +5,19 @@ import { useTagsViewStore } from "./tags-view"
 import { useSettingsStore } from "./settings"
 import { getToken, removeToken, setEmail, setToken } from "@/utils/cache/cookies"
 import { resetRouter } from "@/router"
-import { loginApi, getUserInfoApi } from "@/api/login"
-import { type LoginRequestData } from "@/api/login/types/login"
+import { loginApi, getUserInfoApi, searchUserApi } from "@/api/login"
+import { UserInfo, type LoginRequestData } from "@/api/login/types/login"
 import routeSettings from "@/config/route"
 import Roles from "@/constants/roles"
 import { connectWS, disconnectWS } from "@/utils/websocket"
+import { RefSymbol } from "@vue/reactivity"
 
 export const useUserStore = defineStore("user", () => {
   const token = ref<string>(getToken() || "")
   const roles = ref<string[]>([])
   const username = ref<string>("")
   const email = ref<string>("")
+  const searchUserData = ref<UserInfo[]>([])
 
   const tagsViewStore = useTagsViewStore()
   const settingsStore = useSettingsStore()
@@ -86,7 +88,32 @@ export const useUserStore = defineStore("user", () => {
     }
   }
 
-  return { token, roles, username, email, login, getInfo, changeRoles, logout, resetToken }
+  const searchUser = async (keyword: string): Promise<UserInfo[]> => {
+    keyword = keyword.trim()
+    if (keyword === "") return []
+
+    let reg = new RegExp(keyword)
+    let searchUserResult: UserInfo[] = []
+    searchUserData.value.forEach((u) => {
+      if (reg.test(u.email) || reg.test(u.username)) {
+        searchUserResult.push(u)
+      }
+    })
+    if (searchUserResult.length < 6) {
+      searchUserResult = []
+      const { data } = await searchUserApi(keyword)
+      data.forEach((u) => {
+        searchUserData.value.push(u)
+        if (reg.test(u.email) || reg.test(u.username)) {
+          searchUserResult.push(u)
+        }
+      })
+    }
+    console.log(searchUserResult)
+    return searchUserResult
+  }
+
+  return { token, roles, username, email, login, getInfo, changeRoles, logout, resetToken, searchUser }
 })
 
 /** Used outside setup */

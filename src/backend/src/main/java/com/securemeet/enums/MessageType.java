@@ -1,4 +1,4 @@
-package com.securemeet.models.message;
+package com.securemeet.enums;
 
 public enum MessageType {
     TEXT(0),

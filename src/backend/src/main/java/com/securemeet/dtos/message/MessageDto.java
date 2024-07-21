@@ -2,7 +2,7 @@ package com.securemeet.dtos.message;
 
 import java.util.Date;
 
-import com.securemeet.models.message.MessageType;
+import com.securemeet.enums.MessageType;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

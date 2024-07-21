@@ -3,6 +3,7 @@ package com.securemeet.controllers;
 import java.util.List;
 
 import org.springframework.context.event.EventListener;
+import org.springframework.data.domain.Page;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,7 +13,7 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import com.securemeet.dtos.user.UserStatusDto;
 import com.securemeet.responses.ApiResponseData;
 import com.securemeet.responses.user.ContactResponse;
-import com.securemeet.responses.user.UserInfor;
+import com.securemeet.responses.user.UserInfo;
 import com.securemeet.services.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -44,8 +45,8 @@ public class UserController {
     }
 
     @GetMapping("/search")
-    public ApiResponseData<List<UserInfor>> searchUser(@RequestParam String keyword) {
-        ApiResponseData<List<UserInfor>> result = new ApiResponseData<>(0,
+    public ApiResponseData<List<UserInfo>> searchUser(@RequestParam String keyword) {
+        ApiResponseData<List<UserInfo>> result = new ApiResponseData<>(0,
                 userService.searchContact(keyword), "");
         return result;
     }

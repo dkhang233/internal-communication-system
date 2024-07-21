@@ -1,4 +1,4 @@
-package com.securemeet.models.user;
+package com.securemeet.enums;
 
 public enum Role {
     ADMIN(0),

@@ -13,7 +13,7 @@ import com.securemeet.dtos.user.LoginUserDto;
 import com.securemeet.dtos.user.RegisterUserDto;
 import com.securemeet.models.user.User;
 import com.securemeet.repositories.UserRepository;
-import com.securemeet.responses.user.UserInfor;
+import com.securemeet.responses.user.UserInfo;
 
 import lombok.RequiredArgsConstructor;
 
@@ -52,11 +52,11 @@ public class AuthenticationService {
     }
 
     // Lấy thông tin người dùng hiện tại
-    public UserInfor getUserInfor(Authentication authentication) {
+    public UserInfo getUserInfo(Authentication authentication) {
         String email = authentication.getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Not found user"));
         int[] roles = { user.getRole() };
-        return UserInfor.builder().email(user.getUsername()).username(user.getName()).roles(roles).build();
+        return UserInfo.builder().email(user.getUsername()).username(user.getName()).roles(roles).build();
     }
 }

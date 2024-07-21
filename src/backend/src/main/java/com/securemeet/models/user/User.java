@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.Collection;
 import java.util.List;
 
+import com.securemeet.enums.Role;
 import org.hibernate.annotations.Comment;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

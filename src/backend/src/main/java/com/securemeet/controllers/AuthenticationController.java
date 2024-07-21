@@ -11,7 +11,7 @@ import com.securemeet.dtos.user.RegisterUserDto;
 import com.securemeet.models.user.User;
 import com.securemeet.responses.ApiResponseData;
 import com.securemeet.responses.user.LoginResponse;
-import com.securemeet.responses.user.UserInfor;
+import com.securemeet.responses.user.UserInfo;
 import com.securemeet.services.AuthenticationService;
 import com.securemeet.services.JwtService;
 
@@ -53,9 +53,9 @@ public class AuthenticationController {
     }
 
     @GetMapping("info")
-    public ApiResponseData<UserInfor> getUserInfor(Authentication authentication) {
-        UserInfor infor = authenticationService.getUserInfor(authentication);
-        ApiResponseData<UserInfor> response = new ApiResponseData<>(0, infor, "");
+    public ApiResponseData<UserInfo> getUserInfo(Authentication authentication) {
+        UserInfo info = authenticationService.getUserInfo(authentication);
+        ApiResponseData<UserInfo> response = new ApiResponseData<>(0, info, "");
         return response;
     }
 

@@ -2,6 +2,9 @@ package com.securemeet.services;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +15,7 @@ import com.securemeet.models.user.Contact;
 import com.securemeet.repositories.ContactRepository;
 import com.securemeet.repositories.UserRepository;
 import com.securemeet.responses.user.ContactResponse;
-import com.securemeet.responses.user.UserInfor;
+import com.securemeet.responses.user.UserInfo;
 
 import lombok.RequiredArgsConstructor;
 
@@ -49,13 +52,14 @@ public class UserService {
     }
 
     // Tìm kiếm người dùng
-    public List<UserInfor> searchContact(String searchContact) {
+    public List<UserInfo> searchContact(String searchContact) {
         searchContact = searchContact.trim();
         if (searchContact.isEmpty()) {
             return List.of();
         }
-        List<UserInfor> result = userRepository.searchUser("%" + searchContact + "%");
-        return result;
+        Pageable pageable = PageRequest.of(0,10);
+        Page<UserInfo> result = userRepository.searchUser("%" + searchContact + "%",pageable );
+        return result.getContent();
     }
 
     public List<ContactResponse> addContact(Contact contact, Authentication authentication) {

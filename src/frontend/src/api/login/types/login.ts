@@ -12,11 +12,20 @@ export interface ContactRequestData {
   contactId: string
   contactTime: Date
 }
+
+export interface UserInfo {
+  username: string
+  email: string
+  roles: number[]
+  avatar: string
+  status: boolean
+}
+
 export type LoginCodeResponseData = ApiResponseData<string>
 
 export type LoginResponseData = ApiResponseData<{ token: string }>
 
-export type UserInfoResponseData = ApiResponseData<{ username: string; email: string; roles: number[] }>
+export type UserInfoResponseData = ApiResponseData<UserInfo>
 
 export type ContactResponseData = ApiResponseData<
   {
@@ -27,3 +36,5 @@ export type ContactResponseData = ApiResponseData<
     contactTime: Date
   }[]
 >
+
+export type SearchUserResponseData = ApiResponseData<UserInfo[]>

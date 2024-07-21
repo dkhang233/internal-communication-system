@@ -3,13 +3,16 @@ import Messages from "./Messages.vue"
 import MessageInput from "./MessageInput.vue"
 import StyledBadge from "../contact/StyledBadge.vue"
 import { useChatStore } from "@/store/modules/chat"
-import { ref, watchEffect } from "vue"
+import { computed, ref, watchEffect } from "vue"
+import { UserInfo } from "@/api/login/types/login"
+import { useUserStore } from "@/store/modules/user"
 
 const searchInput = ref<any>(null)
 const name = ref<String>("User")
 const online = ref<boolean>(false)
 const showSearchResult = ref<boolean>(false)
 const search = ref<string>("")
+const searchResult = ref<UserInfo[]>([])
 
 watchEffect(() => {
   name.value = useChatStore().contacts[useChatStore().currentChatUser]?.name || "User"
@@ -19,7 +22,18 @@ watchEffect(() => {
 watchEffect(() => {
   if (useChatStore().showSendNewMessage) searchInput.value?.focus()
 })
-const handleSearchUser = (value: string) => {}
+const handleSearchUser = (value: string) => {
+  useUserStore()
+    .searchUser(value)
+    .then((result) => {
+      searchResult.value = result
+    })
+    .catch((err) => (searchResult.value = []))
+}
+
+const hasResult = computed(() => {
+  return searchResult.value.length > 0 ? false : true
+})
 </script>
 <template>
   <div class="conversation-container">
@@ -56,8 +70,19 @@ const handleSearchUser = (value: string) => {}
       </div>
     </div>
     <div class="conversation-body">
-      <el-card v-if="showSearchResult" class="conversation-body-result"></el-card>
-      <Messages></Messages>
+      <el-card v-if="showSearchResult" class="conversation-body-result">
+        <el-scrollbar v-show="!hasResult" max-height="180px">
+          <el-card class="conversation-body-result-item" v-for="i in searchResult">
+            <div>{{ i.username }}</div>
+          </el-card>
+        </el-scrollbar>
+        <span v-show="hasResult">Can not find user</span>
+      </el-card>
+      <div class="conversation-body-newchat" v-if="useChatStore().showSendNewMessage">
+        <SvgIcon class="conversation-body-newchat-image" name="new-chat"></SvgIcon>
+        <span>Start new chat with your collegue</span>
+      </div>
+      <Messages v-if="!useChatStore().showSendNewMessage"></Messages>
     </div>
     <MessageInput class="conversation-footer"></MessageInput>
   </div>
@@ -100,9 +125,21 @@ const handleSearchUser = (value: string) => {}
       position: absolute;
       left: 10%;
       width: 80%;
-      height: 200px;
+      max-height: 200px;
       z-index: 5;
-      background-color: aquamarine;
+      --el-card-padding: 10px;
+    }
+
+    &-newchat {
+      height: 86%;
+      display: flex;
+      flex-direction: column;
+      justify-content: end;
+      align-items: center;
+      &-image {
+        width: 500px;
+        height: 300px;
+      }
     }
   }
 

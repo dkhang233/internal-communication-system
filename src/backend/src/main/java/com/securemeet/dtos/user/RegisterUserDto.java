@@ -1,6 +1,6 @@
 package com.securemeet.dtos.user;
 
-import com.securemeet.models.user.Role;
+import com.securemeet.enums.Role;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
