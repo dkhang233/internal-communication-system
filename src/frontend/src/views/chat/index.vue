@@ -4,20 +4,32 @@ import Contact from "./components/contact/Contact.vue"
 import Conversation from "./components/conversation/Conversation.vue"
 import { useDevice } from "@/hooks/useDevice"
 import { useChatStore } from "@/store/modules/chat"
-
+// Khởi tạo danh sách liên hệ
 useChatStore().getContacts()
-const search = ref<string>("")
+
+// Tham chiêu đến input của bộc lọc (html element)
 const filterInput = ref<any>(null)
+
+// Lưu giá trị input của bộ lọc
+const search = ref<string>("")
+
+// Kiểm tra xem thiết bị đang dùng có phải là điện thoại không
 const { isMobile } = useDevice()
+
+// Có hiển thị bộ lọc hay không
 const showFilter = ref<boolean>(false)
 
-// Show correspond contact when user click on contact
-const handleClickContact = (key: number) => {
+// Hiển thị liên hệ tương ứng khi người dùng chọn trong kết quả lọc
+const handleClickContact = (email: string) => {
+  if (useChatStore().contacts.at(0)?.isNewContact) {
+    useChatStore().contacts.shift()
+  }
   useChatStore().showSendNewMessage = false
-  useChatStore().currentChatUser = key - 1
+  useChatStore().currentChatUser = useChatStore().contacts.findIndex((c) => c.email === email)
   useChatStore().hasNewMessage = true
 }
 
+// Lọc liên hệ theo giá trị mà người dùng nhập
 const handleFilterInput = (value: string) => {
   const reg = new RegExp(value)
   useChatStore().contacts.forEach((contact) => {
@@ -26,6 +38,7 @@ const handleFilterInput = (value: string) => {
   })
 }
 
+// Nếu người dùng không dùng chức năng lọc nữa => xóa nội dung trong input của  bộ lọc
 watchEffect(() => {
   showFilter.value || filterInput.value?.clear()
 })
@@ -62,15 +75,16 @@ watchEffect(() => {
           </template>
         </el-input>
       </div>
-      <!-- <el-icon class="icon-wrapper"><Search /></el-icon>
-        <input class="input" v-model="search" placeholder="Search..." /> -->
       <el-scrollbar class="list">
-        <Contact
-          v-for="index in useChatStore().contacts.length"
-          :index="index"
-          v-show="useChatStore().contacts[index - 1].show"
-          @click="handleClickContact(index)"
-        />
+        <template v-for="value in useChatStore().contacts" :key="value.email">
+          <Contact
+            :email="value.email"
+            :name="value.name"
+            :online="value.online"
+            v-show="value.show"
+            @click="handleClickContact(value.email)"
+          />
+        </template>
       </el-scrollbar>
     </div>
     <Conversation class="conversation" />
@@ -93,7 +107,7 @@ watchEffect(() => {
   &-header {
     width: 94%;
     height: 3rem;
-    margin: 0px 10px;
+    margin: 0 10px 10px 10px;
     border-radius: 5px;
     background-color: var(--el-bg-color-overlay);
 

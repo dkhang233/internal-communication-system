@@ -45,20 +45,20 @@ public class UserService {
     }
 
     // Lấy thông tin về liên hệ có Id xác định của người dùng hiện tại
-    public ContactResponse getContactByContactId(Authentication authentication, String contactId) {
+    public ContactResponse getContactByContactId(String contactId,Authentication authentication) {
         ContactResponse res = contactRepository.findByOwnerIdAndContactId(authentication.getName(), contactId)
                 .orElseThrow(() -> new DataNotFoundException("Not found contact"));
         return res;
     }
 
     // Tìm kiếm người dùng
-    public List<UserInfo> searchContact(String searchContact) {
-        searchContact = searchContact.trim();
-        if (searchContact.isEmpty()) {
+    public List<UserInfo> searchUser(String info) {
+        info = info.trim();
+        if (info.isEmpty()) {
             return List.of();
         }
         Pageable pageable = PageRequest.of(0,10);
-        Page<UserInfo> result = userRepository.searchUser("%" + searchContact + "%",pageable );
+        Page<UserInfo> result = userRepository.searchUser("%" + info + "%",pageable );
         return result.getContent();
     }
 

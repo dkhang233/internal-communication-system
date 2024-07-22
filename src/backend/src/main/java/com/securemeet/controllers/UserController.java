@@ -3,7 +3,6 @@ package com.securemeet.controllers;
 import java.util.List;
 
 import org.springframework.context.event.EventListener;
-import org.springframework.data.domain.Page;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RestController;
@@ -44,10 +43,16 @@ public class UserController {
         return result;
     }
 
+    @GetMapping("/contacts/specific")
+    public ApiResponseData<ContactResponse> getSpecificContact(@RequestParam(value = "contactId") String contactId,Authentication authentication) {
+        ApiResponseData<ContactResponse> result = new ApiResponseData<>(0,
+                userService.getContactByContactId(contactId,authentication), "");
+        return result;
+    }
     @GetMapping("/search")
     public ApiResponseData<List<UserInfo>> searchUser(@RequestParam String keyword) {
         ApiResponseData<List<UserInfo>> result = new ApiResponseData<>(0,
-                userService.searchContact(keyword), "");
+                userService.searchUser(keyword), "");
         return result;
     }
 

@@ -18,7 +18,7 @@ export interface UserInfo {
   email: string
   roles: number[]
   avatar: string
-  status: boolean
+  status: number
 }
 
 export type LoginCodeResponseData = ApiResponseData<string>

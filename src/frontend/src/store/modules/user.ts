@@ -17,7 +17,7 @@ export const useUserStore = defineStore("user", () => {
   const roles = ref<string[]>([])
   const username = ref<string>("")
   const email = ref<string>("")
-  const searchUserData = ref<UserInfo[]>([])
+  const searchUserData = ref<Map<string, UserInfo>>(new Map())
 
   const tagsViewStore = useTagsViewStore()
   const settingsStore = useSettingsStore()
@@ -54,9 +54,9 @@ export const useUserStore = defineStore("user", () => {
   const convertRoles = (input: number[]): string[] => {
     let roles = []
     for (let i = 0; i < input.length; i++) {
-      if (input[i] === 1) {
+      if (input[i] === 0) {
         roles.push(Roles.ADMIN)
-      } else if (input[i] === 2) {
+      } else if (input[i] === 1) {
         roles.push(Roles.MANAGER)
       } else if (input[i] === 2) {
         roles.push(Roles.EMPLOYEE)
@@ -94,22 +94,21 @@ export const useUserStore = defineStore("user", () => {
 
     let reg = new RegExp(keyword)
     let searchUserResult: UserInfo[] = []
-    searchUserData.value.forEach((u) => {
-      if (reg.test(u.email) || reg.test(u.username)) {
-        searchUserResult.push(u)
+    searchUserData.value.forEach((v) => {
+      if (reg.test(v.email) || reg.test(v.username)) {
+        searchUserResult.push(v)
       }
     })
     if (searchUserResult.length < 6) {
       searchUserResult = []
       const { data } = await searchUserApi(keyword)
       data.forEach((u) => {
-        searchUserData.value.push(u)
+        if (!searchUserData.value.has(u.email)) searchUserData.value.set(u.email, u)
         if (reg.test(u.email) || reg.test(u.username)) {
           searchUserResult.push(u)
         }
       })
     }
-    console.log(searchUserResult)
     return searchUserResult
   }
 

@@ -54,12 +54,4 @@ const disconnectWS = () => {
   stompClient.disconnect()
 }
 
-const sendWebsocketRequest = (request: WebsocketRequest) => {
-  stompClient.publish({
-    destination: request.destination,
-    body: request?.body
-  })
-  console.log(request.body)
-}
-
-export { connectWS, disconnectWS, sendWebsocketRequest }
+export { connectWS, disconnectWS }

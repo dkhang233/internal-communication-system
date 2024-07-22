@@ -2,37 +2,89 @@
 import Messages from "./Messages.vue"
 import MessageInput from "./MessageInput.vue"
 import StyledBadge from "../contact/StyledBadge.vue"
-import { useChatStore } from "@/store/modules/chat"
+import { Contact, useChatStore } from "@/store/modules/chat"
 import { computed, ref, watchEffect } from "vue"
 import { UserInfo } from "@/api/login/types/login"
 import { useUserStore } from "@/store/modules/user"
 
+// Tham chiếu đến input (html element)
 const searchInput = ref<any>(null)
+
+// Tên liên hệ hiển thị lên header
 const name = ref<String>("User")
+
+// Trạng thái liên hệ hiển thị lên header
 const online = ref<boolean>(false)
+
+// Có hiện thị kết quả tìm kiếm hay không
 const showSearchResult = ref<boolean>(false)
+
+// Lưu giá trị của ô tìm kiếm liên hệ
 const search = ref<string>("")
 const searchResult = ref<UserInfo[]>([])
 
-watchEffect(() => {
-  name.value = useChatStore().contacts[useChatStore().currentChatUser]?.name || "User"
-  online.value = useChatStore().contacts[useChatStore().currentChatUser]?.online || false
-})
-
-watchEffect(() => {
-  if (useChatStore().showSendNewMessage) searchInput.value?.focus()
-})
 const handleSearchUser = (value: string) => {
+  // Khi bắt đầu tìm kiếm người dùng => không có liên hệ (người dùng khác) đang chat với người dùng hiện tại
+  useChatStore().currentChatUser = 99999
+
+  // Tìm kiếm liên hệ (người dùng khác)
   useUserStore()
     .searchUser(value)
     .then((result) => {
       searchResult.value = result
     })
-    .catch((err) => (searchResult.value = []))
+    .catch(() => (searchResult.value = []))
 }
 
+// Khi người dùng không focus vào ô tìm kiếm liên hệ (người dùng khác)  => ẩn kết quả tìm kiếm
+const handleBlurSearchInput = () => {
+  setTimeout(() => {
+    showSearchResult.value = false
+  }, 100)
+}
+
+//  Khi người dùng click vào một liên hệ (người dùng khác) ở kết quả tìm kiếm => thiết lập liên hệ đang chat là liên hệ đó
+const handleClickUser = (user: UserInfo) => {
+  // Kiểm tra xem liên hệ vừa chọn là liên hệ cũ hay mới
+  if (useChatStore().conversations.has(user.email)) {
+    // Nếu liên hệ cũ => chỉ cần hiện thị tin nhắn đã nhắn
+    useChatStore().currentChatUser = useChatStore().contacts.findIndex((e) => e.email === user.email)
+    useChatStore().showSendNewMessage = false
+  } else {
+    // Nếu liên hệ mới => đẩy thêm vào trong danh sách liên hệ
+    let newContact: Contact = {
+      email: user.email,
+      name: user.username,
+      online: user.status ? true : false,
+      isNewContact: true,
+      show: true
+    }
+    let newContacts = useChatStore().contacts
+    newContacts.unshift(newContact)
+    useChatStore().contacts = newContacts
+
+    // Thiết lập người liên hệ đang chat là liên hệ mới ở trên
+    useChatStore().currentChatUser = 0
+
+    // Hiển thị giao diện nhắn tin thay vì tìm kiếm liên hệ
+    useChatStore().showSendNewMessage = false
+  }
+}
+
+// Cho biết có tồn tại kết quả tìm kiếm hay không
 const hasResult = computed(() => {
   return searchResult.value.length > 0 ? false : true
+})
+
+// Nếu người liên hệ đang chat (currentChatUser) thay đổi => thay đổi tên liên hệ và trạng thái tương ứng trên header
+watchEffect(() => {
+  name.value = useChatStore().contacts[useChatStore().currentChatUser]?.name || "User"
+  online.value = useChatStore().contacts[useChatStore().currentChatUser]?.online || false
+})
+
+// Khi người dùng ấn vào New chat => focus vào ô tìm kiếm liên hệ
+watchEffect(() => {
+  if (useChatStore().showSendNewMessage) searchInput.value?.focus()
 })
 </script>
 <template>
@@ -47,7 +99,7 @@ const hasResult = computed(() => {
           v-model="search"
           clearable
           @focus="showSearchResult = true"
-          @blur="showSearchResult = false"
+          @blur="handleBlurSearchInput"
           @input="handleSearchUser"
         >
         </el-input>
@@ -70,19 +122,23 @@ const hasResult = computed(() => {
       </div>
     </div>
     <div class="conversation-body">
-      <el-card v-if="showSearchResult" class="conversation-body-result">
+      <el-card v-show="showSearchResult" class="conversation-body-result">
         <el-scrollbar v-show="!hasResult" max-height="180px">
-          <el-card class="conversation-body-result-item" v-for="i in searchResult">
-            <div>{{ i.username }}</div>
-          </el-card>
+          <div class="conversation-body-result-item" v-for="i in searchResult" @click="handleClickUser(i)">
+            <el-avatar
+              class="avatar"
+              v-if="!online"
+              src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
+            />
+            <div>
+              <div>{{ i.username }}</div>
+              <div>{{ i.email }}</div>
+            </div>
+          </div>
         </el-scrollbar>
         <span v-show="hasResult">Can not find user</span>
       </el-card>
-      <div class="conversation-body-newchat" v-if="useChatStore().showSendNewMessage">
-        <SvgIcon class="conversation-body-newchat-image" name="new-chat"></SvgIcon>
-        <span>Start new chat with your collegue</span>
-      </div>
-      <Messages v-if="!useChatStore().showSendNewMessage"></Messages>
+      <Messages></Messages>
     </div>
     <MessageInput class="conversation-footer"></MessageInput>
   </div>
@@ -128,17 +184,10 @@ const hasResult = computed(() => {
       max-height: 200px;
       z-index: 5;
       --el-card-padding: 10px;
-    }
 
-    &-newchat {
-      height: 86%;
-      display: flex;
-      flex-direction: column;
-      justify-content: end;
-      align-items: center;
-      &-image {
-        width: 500px;
-        height: 300px;
+      &-item {
+        display: flex;
+        margin: 0 0 15px 0;
       }
     }
   }

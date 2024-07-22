@@ -34,6 +34,7 @@ public class ChatService {
 
         // Kiểm tra liên hệ
         checkContact(sender.getEmail(), recipient.getEmail(), input.getSendedAt());
+
         // Tạo Message và lưa vào db
         Message message = Message.builder()
                 .sender(sender.getEmail())
@@ -72,16 +73,20 @@ public class ChatService {
 
     private void checkContact(String sender, String receiver, Date contactTime) {
 
-        // Lưu liên hệ cho người gửi tin nhắn
+        // Lưu liên hệ cho người gửi tin nhắn nếu chưa tồn tại
         if (contactRepository.findByOwnerIdAndContactId(sender, receiver).isEmpty()) {
             Contact contact = Contact.builder().ownerId(sender).contactId(receiver).contactTime(contactTime).build();
             contactRepository.save(contact);
+        }else { // Nếu tồn tại rồi thì cập nhập thời gian nhắn tin gần nhất
+            contactRepository.updateContactTime(sender,receiver,contactTime);
         }
 
         // Lưu liên hệ cho người nhận tin nhắn
         if (contactRepository.findByOwnerIdAndContactId(receiver, sender).isEmpty()) {
             Contact contact = Contact.builder().ownerId(receiver).contactId(sender).contactTime(contactTime).build();
             contactRepository.save(contact);
+        }else { // Nếu tồn tại rồi thì cập nhập thời gian nhắn tin gần nhất
+            contactRepository.updateContactTime(receiver,sender,contactTime);
         }
     }
 }

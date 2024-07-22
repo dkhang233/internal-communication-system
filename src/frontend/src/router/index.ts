@@ -72,8 +72,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         name: "Meet",
         meta: {
           title: "Meet",
-          svgIcon: "meet",
-          keepAlive: true
+          svgIcon: "meet"
         }
       }
       // {
@@ -95,10 +94,11 @@ export const constantRoutes: RouteRecordRaw[] = [
       {
         path: "index",
         component: () => import("@/views/chat/index.vue"),
-        name: "chat",
+        name: "index",
         meta: {
           title: "Chat",
-          svgIcon: "chat"
+          svgIcon: "chat",
+          keepAlive: true
         }
       }
     ]

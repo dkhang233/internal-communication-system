@@ -2,15 +2,9 @@ package com.securemeet.controllers;
 
 import java.util.List;
 
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,14 +23,15 @@ public class ChatController {
     private final ChatService chatService;
 
     // Gửi tin nhắn đến một người dùng xác định
-    @MessageMapping("/sendMsg")
-    public void processMessage(@Payload MessageDto message) {
+    @PostMapping("/messages/send")
+    public ApiResponseData<Message> processMessage(@RequestBody MessageDto message) {
         Message saveMessage = chatService.handleMessage(message);
         simpMessagingTemplate.convertAndSendToUser( // chuyển đổi và gửi đến hàng đợi người dùng
                 saveMessage.getRecipient(), // người nhận
                 "/queue/receiveMsg", // điểm đến
                 saveMessage // payload
         );
+        return  new ApiResponseData<Message>(0,saveMessage,"");
     }
 
     // Lấy tất cả các tin nhắn liên quan đến người dùng đang đăng nhập

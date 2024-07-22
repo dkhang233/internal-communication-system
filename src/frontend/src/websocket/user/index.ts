@@ -5,7 +5,7 @@ export const handleReceiveUserStatus = (message: IMessage): void => {
   let msg = JSON.parse(message.body)
   useChatStore().contacts.forEach((contact) => {
     if (contact.email === msg.email) {
-      contact.online = msg.status
+      contact.online = msg.status ? true : false
     }
   })
 }

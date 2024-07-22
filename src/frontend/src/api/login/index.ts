@@ -46,7 +46,7 @@ export function getAllContactData() {
 /** Get specific user's contact */
 export function getContactData(contactId: string) {
   return request<Login.ContactResponseData>({
-    url: "users/contacts",
+    url: "users/contacts/specific",
     method: "get",
     params: { contactId }
   })
