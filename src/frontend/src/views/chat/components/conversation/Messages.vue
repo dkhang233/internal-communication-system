@@ -37,9 +37,11 @@ onMounted(() => {
       <span>Start new chat with your colleague</span>
     </div>
     <el-scrollbar ref="msgs" class="msgs-container-messages" v-show="!isNewChat">
-      <Message v-for="msg in messages">
-        <TextMsg :type="msg.type" :content="msg.content" :sended-at="msg.sendedAt" :incoming="msg.incoming"></TextMsg>
-      </Message>
+      <template v-for="msg in messages">
+        <Message :type="msg.type" :sended-at="msg.sendedAt" :incoming="msg.incoming">
+          <TextMsg :content="msg.content"></TextMsg>
+        </Message>
+      </template>
     </el-scrollbar>
   </div>
 </template>

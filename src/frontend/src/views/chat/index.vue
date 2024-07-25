@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, watchEffect } from "vue"
+import { computed, ref, watchEffect } from "vue"
 import Contact from "./components/contact/Contact.vue"
 import Conversation from "./components/conversation/Conversation.vue"
 import { useDevice } from "@/hooks/useDevice"
@@ -30,17 +30,18 @@ const handleClickContact = (email: string) => {
 }
 
 // Lọc liên hệ theo giá trị mà người dùng nhập
-const handleFilterInput = (value: string) => {
-  const reg = new RegExp(value)
-  useChatStore().contacts.forEach((contact) => {
-    if (!reg.test(contact.name)) contact.show = false
-    else contact.show = true
-  })
+const handleFilter = (name: string) => {
+  const reg = new RegExp(search.value)
+  return reg.test(name)
 }
 
 // Nếu người dùng không dùng chức năng lọc nữa => xóa nội dung trong input của  bộ lọc
 watchEffect(() => {
   showFilter.value || filterInput.value?.clear()
+})
+
+computed(() => {
+  const reg = new RegExp(search.value)
 })
 </script>
 <template>
@@ -66,7 +67,6 @@ watchEffect(() => {
           class="contacts-header-search"
           v-model="search"
           placeholder="Search..."
-          @input="handleFilterInput"
         >
           <template #suffix>
             <el-tooltip content="Close filter" placement="top">
@@ -81,7 +81,7 @@ watchEffect(() => {
             :email="value.email"
             :name="value.name"
             :online="value.online"
-            v-show="value.show"
+            v-show="handleFilter(value.name)"
             @click="handleClickContact(value.email)"
           />
         </template>

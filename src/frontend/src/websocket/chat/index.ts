@@ -1,5 +1,5 @@
 import { MessageResponse } from "@/api/chat/types/message"
-import { getContactData } from "@/api/login"
+import { getContactData } from "@/api/user"
 import { Contact, handleSendedAt, useChatStore } from "@/store/modules/chat"
 import { IMessage } from "@stomp/stompjs"
 

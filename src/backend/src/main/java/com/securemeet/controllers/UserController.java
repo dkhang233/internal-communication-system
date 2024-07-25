@@ -2,14 +2,10 @@ package com.securemeet.controllers;
 
 import java.util.List;
 
-import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.socket.messaging.SessionConnectedEvent;
-import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
-import com.securemeet.dtos.user.UserStatusDto;
 import com.securemeet.responses.ApiResponseData;
 import com.securemeet.responses.user.ContactResponse;
 import com.securemeet.responses.user.UserInfo;
@@ -30,6 +26,11 @@ public class UserController {
     private final UserService userService;
     private final SimpMessagingTemplate simpMessagingTemplate;
 
+
+    @GetMapping("/info")
+    public ApiResponseData<UserInfo> getUserInfo(Authentication authentication) {
+        return ApiResponseData.success(userService.getUserInfo(authentication));
+    }
     /**
      * Lấy danh sách liên hệ cho người dùng hiện tại
      * 
@@ -38,48 +39,16 @@ public class UserController {
      */
     @GetMapping("/contacts")
     public ApiResponseData<List<ContactResponse>> getContacts(Authentication authentication) {
-        ApiResponseData<List<ContactResponse>> result = new ApiResponseData<>(0,
-                userService.getContacts(authentication), "");
-        return result;
+        return ApiResponseData.success(userService.getContacts(authentication));
     }
 
-    @GetMapping("/contacts/specific")
+    @GetMapping("/contact")
     public ApiResponseData<ContactResponse> getSpecificContact(@RequestParam(value = "contactId") String contactId,Authentication authentication) {
-        ApiResponseData<ContactResponse> result = new ApiResponseData<>(0,
-                userService.getContactByContactId(contactId,authentication), "");
-        return result;
+        return ApiResponseData.success(userService.getContactByContactId(contactId,authentication));
     }
     @GetMapping("/search")
     public ApiResponseData<List<UserInfo>> searchUser(@RequestParam String keyword) {
-        ApiResponseData<List<UserInfo>> result = new ApiResponseData<>(0,
-                userService.searchUser(keyword), "");
-        return result;
-    }
-
-    /**
-     * Khi thiết lập kết nối websocket thành công
-     * => người dùng online
-     * => gửi thông tin này đến người dùng khác
-     * 
-     * @param event
-     */
-    @EventListener
-    public void handleOnlineStatus(SessionConnectedEvent event) {
-        UserStatusDto userStatusDto = userService.setStatus(event.getUser().getName(), 1);
-        simpMessagingTemplate.convertAndSend("/topic/user/status", userStatusDto);
-    }
-
-    /**
-     * Khi ngắt kết nối websocket thành công
-     * => người dùng offline
-     * => gửi thông tin này đến người dùng khác
-     * 
-     * @param event
-     */
-    @EventListener
-    public void handleOfflineStatus(SessionDisconnectEvent event) {
-        UserStatusDto userStatusDto = userService.setStatus(event.getUser().getName(), 0);
-        simpMessagingTemplate.convertAndSend("/topic/user/status", userStatusDto);
+        return ApiResponseData.success(userService.searchUser(keyword));
     }
 
     // Thêm một liên hệ cho người dùng hiện tại

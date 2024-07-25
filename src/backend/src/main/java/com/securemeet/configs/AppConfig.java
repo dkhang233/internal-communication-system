@@ -19,19 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AppConfig {
     private final UserRepository userRepository;
-
-    // @Bean
-    // CorsConfigurationSource corsConfigurationSource() {
-    // CorsConfiguration configuration = new CorsConfiguration();
-    // configuration.setAllowedOrigins(Arrays.asList("http://localhost:3333"));
-    // configuration.setAllowedMethods(Arrays.asList("*"));
-    // configuration.setAllowedHeaders(Arrays.asList("*"));
-    // UrlBasedCorsConfigurationSource source = new
-    // UrlBasedCorsConfigurationSource();
-    // source.registerCorsConfiguration("/**", configuration);
-    // return source;
-    // }
-
+    
     @Bean
     UserDetailsService userDetailsService() {
         return username -> userRepository.findByEmail(username)

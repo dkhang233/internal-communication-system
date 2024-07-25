@@ -34,8 +34,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class MeetService {
-    private final Map<String, Object> extraClaims = new HashMap<>();
-
     private final JwtService jwtService;
 
     private final UserRepository userRepository;
@@ -92,7 +90,8 @@ public class MeetService {
         occupantRepository.updateOccupantLeft(id, leftAt);
     }
 
-    public void setExtraClaims() {
+    private  Map<String, Object> setExtraClaims() {
+       Map<String, Object> extraClaims = new HashMap<>();
         User user = new User();
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (!(authentication instanceof AnonymousAuthenticationToken)) {
@@ -111,11 +110,11 @@ public class MeetService {
         context.put("user", meetUserDto);
         extraClaims.put("context", context);
         extraClaims.put("room", "*");
+        return  extraClaims;
     }
 
-    public ApiResponseData<String> generateMeetToken() {
-        String token = jwtService.generateMeetToken(extraClaims);
-        return new ApiResponseData<String>(0, token, "");
+    public String generateMeetToken() {
+        return jwtService.generateMeetToken(setExtraClaims());
     }
 
     public List<Room> getAllRooms() {

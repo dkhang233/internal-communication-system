@@ -22,6 +22,12 @@ public class ChatController {
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final ChatService chatService;
 
+    // Lấy tất cả các tin nhắn liên quan đến người dùng đang đăng nhập
+    @GetMapping("/messages")
+    public ApiResponseData<List<Message>> getAllMessages() {
+        return ApiResponseData.success(chatService.getAllMessages());
+    }
+
     // Gửi tin nhắn đến một người dùng xác định
     @PostMapping("/messages/send")
     public ApiResponseData<Message> processMessage(@RequestBody MessageDto message) {
@@ -31,22 +37,14 @@ public class ChatController {
                 "/queue/receiveMsg", // điểm đến
                 saveMessage // payload
         );
-        return  new ApiResponseData<Message>(0,saveMessage,"");
+        return  ApiResponseData.success(saveMessage);
     }
-
-    // Lấy tất cả các tin nhắn liên quan đến người dùng đang đăng nhập
-    @GetMapping("/messages")
-    public ApiResponseData<List<Message>> getAllMessages() {
-        List<Message> response = chatService.getAllMessages();
-        return new ApiResponseData<>(0, response, "");
-    }
-
+    
     // Lấy tất cả tin nhắn giữa người dùng đang đăng nhập và một người dùng khác
     @GetMapping("/messages/contact")
     public ApiResponseData<List<Message>> getMessagesForSpecificContact(Authentication authentication,
             @RequestParam(value = "contactId") String contactId) {
-        List<Message> response = chatService.getMessageForSpecificContact(authentication, contactId);
-        return new ApiResponseData<>(0, response, "");
+        return  ApiResponseData.success(chatService.getMessageForSpecificContact(authentication, contactId));
     }
 
 }

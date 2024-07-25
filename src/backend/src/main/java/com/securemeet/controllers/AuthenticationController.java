@@ -21,42 +21,29 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
-@RequestMapping("${api.prefix}/users")
+@RequestMapping("${api.prefix}/auth")
 @RequiredArgsConstructor
 @CrossOrigin(originPatterns = "**")
 public class AuthenticationController {
-
-    @Value("${api.prefix}")
-    private String apiPrefix;
+    
     private final JwtService jwtService;
     private final AuthenticationService authenticationService;
 
     @PostMapping("/signup")
     public ApiResponseData<String> register(@RequestBody RegisterUserDto user) {
         authenticationService.signup(user);
-        ApiResponseData<String> response = new ApiResponseData<>(0, "", "");
-        return response;
+        return ApiResponseData.success("");
     }
 
-    @PostMapping("login")
+    @PostMapping("/login")
     public ApiResponseData<LoginResponse> login(@RequestBody LoginUserDto user) {
         User authenticatedUser = authenticationService.authenticate(user);
         String jwtToken = jwtService.generateToken(authenticatedUser);
-        ApiResponseData<LoginResponse> response = new ApiResponseData<>(0, new LoginResponse(jwtToken), "");
-        return response;
+        return  ApiResponseData.success(new LoginResponse(jwtToken));
     }
 
-    @GetMapping("code")
+    @GetMapping("/code")
     public ApiResponseData<String> getCode() {
-        ApiResponseData<String> response = new ApiResponseData<>(0, "abc", "");
-        return response;
+        return  ApiResponseData.success("abc");
     }
-
-    @GetMapping("info")
-    public ApiResponseData<UserInfo> getUserInfo(Authentication authentication) {
-        UserInfo info = authenticationService.getUserInfo(authentication);
-        ApiResponseData<UserInfo> response = new ApiResponseData<>(0, info, "");
-        return response;
-    }
-
 }

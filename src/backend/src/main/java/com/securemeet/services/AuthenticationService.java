@@ -51,12 +51,4 @@ public class AuthenticationService {
                 .orElseThrow(() -> new UsernameNotFoundException("Not found user"));
     }
 
-    // Lấy thông tin người dùng hiện tại
-    public UserInfo getUserInfo(Authentication authentication) {
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Not found user"));
-        int[] roles = { user.getRole() };
-        return UserInfo.builder().email(user.getUsername()).username(user.getName()).roles(roles).build();
-    }
 }

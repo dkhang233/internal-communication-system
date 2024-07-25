@@ -5,12 +5,13 @@ import { useTagsViewStore } from "./tags-view"
 import { useSettingsStore } from "./settings"
 import { getToken, removeToken, setEmail, setToken } from "@/utils/cache/cookies"
 import { resetRouter } from "@/router"
-import { loginApi, getUserInfoApi, searchUserApi } from "@/api/login"
-import { UserInfo, type LoginRequestData } from "@/api/login/types/login"
+import { loginApi } from "@/api/login"
+import { type LoginRequestData } from "@/api/login/types/login"
 import routeSettings from "@/config/route"
 import Roles from "@/constants/roles"
 import { connectWS, disconnectWS } from "@/utils/websocket"
-import { RefSymbol } from "@vue/reactivity"
+import { UserInfo } from "@/api/user/types/user"
+import { getUserInfoApi, searchUserApi } from "@/api/user"
 
 export const useUserStore = defineStore("user", () => {
   const token = ref<string>(getToken() || "")

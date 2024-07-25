@@ -1,43 +1,27 @@
 <script lang="ts" setup>
-import { MessageType } from "@/api/chat/types/message"
-
 interface Props {
-  type: MessageType
   content: string
-  sendedAt: string
-  incoming: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  type: MessageType.TEXT,
-  content: "",
-  sendedAt: "00:00",
-  incoming: false
+  content: ""
 })
 </script>
 
 <template>
-  <div :class="incoming ? 'msg-container incoming-msg' : 'msg-container outcoming-msg'">
-    <div class="msg-content">{{ content }}</div>
+  <div class="msg-content">
+    {{ content }}
   </div>
 </template>
 
 <style lang="scss" scoped>
-.msg-container {
-  display: flex;
-  flex-direction: row;
-  margin: 5px;
-}
-
-.incoming-msg {
-  justify-content: flex-start;
+.in-msg {
   .msg-content {
     background-color: var(--el-bg-color-page);
   }
 }
 
-.outcoming-msg {
-  justify-content: flex-end;
+.out-msg {
   .msg-content {
     background-color: var(--el-color-primary);
     color: white !important;

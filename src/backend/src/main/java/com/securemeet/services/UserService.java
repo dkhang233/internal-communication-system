@@ -2,15 +2,17 @@ package com.securemeet.services;
 
 import java.util.List;
 
+import com.securemeet.models.user.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.securemeet.dtos.user.UserStatusDto;
-import com.securemeet.exceptionhandlers.DataNotFoundException;
-import com.securemeet.exceptionhandlers.InvalidDataException;
+import com.securemeet.exceptionhandlers.custom.DataNotFoundException;
+import com.securemeet.exceptionhandlers.custom.InvalidDataException;
 import com.securemeet.models.user.Contact;
 import com.securemeet.repositories.ContactRepository;
 import com.securemeet.repositories.UserRepository;
@@ -25,6 +27,15 @@ public class UserService {
     private final UserRepository userRepository;
     private final ContactRepository contactRepository;
 
+    // Lấy thông tin người dùng hiện tại
+    public UserInfo getUserInfo(Authentication authentication) {
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Not found user"));
+        int[] roles = { user.getRole() };
+        return UserInfo.builder().email(user.getUsername()).username(user.getName()).roles(roles).build();
+    }
+    
     // Thay đổi trạng thái(status) của người dùng
     public UserStatusDto setStatus(String email, int status) {
         userRepository.findByEmail(email).orElseThrow(() -> new DataNotFoundException("Not found user"));

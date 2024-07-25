@@ -1,8 +1,8 @@
 import { defineStore } from "pinia"
 import { ref } from "vue"
-import { getAllContactData } from "@/api/login"
 import { getMessageForSpecificContactApi, sendMessageApi } from "@/api/chat"
 import { MessageResponse, MessageType } from "@/api/chat/types/message"
+import { getAllContactData } from "@/api/user"
 
 export interface Contact {
   email: string

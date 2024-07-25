@@ -3,11 +3,12 @@ package com.securemeet.services;
 import java.util.Date;
 import java.util.List;
 
+import com.securemeet.utils.BeanUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import com.securemeet.dtos.message.MessageDto;
-import com.securemeet.exceptionhandlers.DataNotFoundException;
+import com.securemeet.exceptionhandlers.custom.DataNotFoundException;
 import com.securemeet.models.message.Message;
 import com.securemeet.models.user.Contact;
 import com.securemeet.models.user.User;
@@ -36,14 +37,10 @@ public class ChatService {
         checkContact(sender.getEmail(), recipient.getEmail(), input.getSendedAt());
 
         // Tạo Message và lưa vào db
-        Message message = Message.builder()
-                .sender(sender.getEmail())
-                .recipient(recipient.getEmail())
-                .type(input.getType().getValue())
-                .content(input.getContent())
-                .sendedAt(input.getSendedAt())
-                .build();
-        message = messageRepository.save(message);
+        Message message = BeanUtils.copyProperties(input,Message.class);
+        if(message != null){
+            message = messageRepository.save(message);
+        }
         // trả về cho người dùng
         return message;
     }

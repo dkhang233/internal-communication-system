@@ -55,14 +55,12 @@ public class MeetController {
 
     @PostMapping("/token")
     public ApiResponseData<String> generateMeetToken() {
-        meetService.setExtraClaims();
-        return meetService.generateMeetToken();
+        return  ApiResponseData.success(meetService.generateMeetToken());
     }
 
     @GetMapping("/allrooms")
     public ApiResponseData<List<Room>> getAllRooms() {
-        List<Room> rooms = meetService.getAllRooms();
-        return new ApiResponseData<>(0, rooms, "");
+        return  ApiResponseData.success(meetService.getAllRooms());
     }
 
 }
