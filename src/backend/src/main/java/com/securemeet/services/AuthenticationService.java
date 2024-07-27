@@ -2,6 +2,8 @@ package com.securemeet.services;
 
 import java.util.Date;
 
+import com.securemeet.exceptionhandlers.custom.InvalidDataException;
+import com.securemeet.utils.BeanUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -25,18 +27,18 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
 
     // Đăng kí
-    public User signup(RegisterUserDto input) {
+    public void signup(RegisterUserDto input) {
         if (userRepository.findByEmail(input.getEmail()).isPresent()) {
-            throw new RuntimeException("Email has been used");
+            throw new InvalidDataException("Email has been used");
         }
         User user = User
                 .builder()
                 .email(input.getEmail())
-                .role(input.getRole().getValue())
+                .role(input.getRole())
                 .password(passwordEncoder.encode(input.getPassword()))
                 .username(input.getUsername())
                 .build();
-        return userRepository.save(user);
+        userRepository.save(user);
     }
 
     // Xác thực khi người dùng đăng nhập

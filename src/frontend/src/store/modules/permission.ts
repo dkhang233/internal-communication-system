@@ -5,6 +5,7 @@ import { type RouteRecordRaw } from "vue-router"
 import { constantRoutes, dynamicRoutes } from "@/router"
 import { flatMultiLevelRoutes } from "@/router/helper"
 import routeSettings from "@/config/route"
+import { Role } from "@/api/user/types/user"
 
 const hasPermission = (roles: string[], route: RouteRecordRaw) => {
   const routeRoles = route.meta?.roles

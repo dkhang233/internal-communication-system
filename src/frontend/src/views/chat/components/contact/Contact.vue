@@ -2,7 +2,7 @@
 import { Contact, MessageData, useChatStore } from "@/store/modules/chat"
 import StyledBadge from "./StyledBadge.vue"
 import { ref, watchEffect } from "vue"
-import { MessageType } from "@/api/chat/types/message"
+import MessageType from "@/constants/message-type"
 interface Props {
   email: string
   name: string
@@ -14,7 +14,8 @@ const newestMessage = ref<MessageData>({
   type: MessageType.TEXT,
   content: "",
   sendedAt: "--:--",
-  incoming: false
+  incoming: false,
+  status: "SENDING"
 })
 
 watchEffect(() => {
@@ -22,7 +23,8 @@ watchEffect(() => {
     type: MessageType.TEXT,
     content: "",
     sendedAt: "--:--",
-    incoming: false
+    incoming: false,
+    status: "SENDING"
   }
 })
 </script>

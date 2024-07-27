@@ -2,6 +2,7 @@ package com.securemeet.services;
 
 import java.util.List;
 
+import com.securemeet.enums.Role;
 import com.securemeet.models.user.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,10 +33,10 @@ public class UserService {
         String email = authentication.getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Not found user"));
-        int[] roles = { user.getRole() };
+        Role[] roles = { user.getRole() };
         return UserInfo.builder().email(user.getUsername()).username(user.getName()).roles(roles).build();
     }
-    
+
     // Thay đổi trạng thái(status) của người dùng
     public UserStatusDto setStatus(String email, int status) {
         userRepository.findByEmail(email).orElseThrow(() -> new DataNotFoundException("Not found user"));
@@ -51,8 +52,7 @@ public class UserService {
     // Lấy thông tin về các liên hệ của người dùng hiện tại
     public List<ContactResponse> getContacts(Authentication authentication) {
         String ownerId = authentication.getName();
-        List<ContactResponse> result = contactRepository.findByOwnerId(ownerId);
-        return result;
+        return contactRepository.findByOwnerId(ownerId);
     }
 
     // Lấy thông tin về liên hệ có Id xác định của người dùng hiện tại

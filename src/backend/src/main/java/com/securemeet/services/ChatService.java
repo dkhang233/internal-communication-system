@@ -3,7 +3,12 @@ package com.securemeet.services;
 import java.util.Date;
 import java.util.List;
 
+import com.securemeet.enums.MessageStatus;
+import com.securemeet.enums.MessageType;
+import com.securemeet.exceptionhandlers.custom.InvalidDataException;
 import com.securemeet.utils.BeanUtils;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -37,21 +42,24 @@ public class ChatService {
         checkContact(sender.getEmail(), recipient.getEmail(), input.getSendedAt());
 
         // Tạo Message và lưa vào db
-        Message message = BeanUtils.copyProperties(input,Message.class);
-        if(message != null){
-            message = messageRepository.save(message);
-        }
+        Message message = Message.builder()
+                .sender(input.getSender())
+                .recipient(input.getRecipient())
+                .type(input.getType())
+                .content(input.getContent())
+                .sendedAt(new Date())
+                .status(MessageStatus.SUCCESS).build();
         // trả về cho người dùng
-        return message;
+        return messageRepository.save(message);
     }
 
     /*
-     * Lấy 20 messages mới nhất giữa người liên hệ có id = contactId và người dùng
+     * Lấy 10 messages mới nhất giữa người liên hệ có id = contactId và người dùng
      */
-    public List<Message> getMessageForSpecificContact(Authentication authentication, String contactId) {
+    public List<Message> getMessageForSpecificContact(Authentication authentication, String contactId, int pageNumber) {
         String myId = authentication.getName();
-        List<Message> result = messageRepository.getMessagesForSpecificContact(myId, contactId);
-        return result;
+        Pageable pageable = PageRequest.of(pageNumber,10);
+        return messageRepository.getMessagesForSpecificContact(myId, contactId, pageable).toList();
     }
 
     /**

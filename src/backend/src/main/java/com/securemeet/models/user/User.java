@@ -37,7 +37,7 @@ public class User implements UserDetails {
 
     @Column(name = "role", nullable = false)
     @Comment(value = "0: admin, 1: manager, 2: employee")
-    private int role;
+    private Role role;
 
     private String avatar;
 
@@ -49,7 +49,7 @@ public class User implements UserDetails {
     private Date lastLoginTime;
 
     public void setRole(Role role) {
-        this.role = role.getValue();
+        this.role = role;
     }
 
     public String getName() {

@@ -2,6 +2,8 @@ package com.securemeet.models.message;
 
 import java.util.Date;
 
+import com.securemeet.enums.MessageStatus;
+import com.securemeet.enums.MessageType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -32,11 +34,14 @@ public class Message {
     private String recipient;
 
     @Column(name = "type")
-    private int type;
+    private MessageType type;
 
     @Column(name = "content")
     private String content;
 
     @Column(name = "sended_at")
     private Date sendedAt;
+
+    @Column(name="status")
+    private MessageStatus status;
 }

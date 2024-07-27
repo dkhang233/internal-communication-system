@@ -4,7 +4,31 @@ import Contact from "./components/contact/Contact.vue"
 import Conversation from "./components/conversation/Conversation.vue"
 import { useDevice } from "@/hooks/useDevice"
 import { useChatStore } from "@/store/modules/chat"
+import { useFullscreenLoading } from "@/hooks/useFullscreenLoading"
+
+const svg = `
+  <path class="path" d="
+    M 30 15
+    L 28 17
+    M 25.61 25.61
+    A 15 15, 0, 0, 1, 15 30
+    A 15 15, 0, 1, 1, 27.99 7.5
+    L 15 15
+  " style="stroke-width: 4px; fill: rgba(0, 0, 0, 0)"/>
+`
+
+const options = {
+  text: "An error is about to occur...",
+  background: "#F56C6C20",
+  svg,
+  svgViewBox: "-10, -10, 50, 50"
+}
+
 // Khởi tạo danh sách liên hệ
+// const initData = async () => {
+//   await useFullscreenLoading(, options)
+//   console.log("ok")
+// }
 useChatStore().getContacts()
 
 // Tham chiêu đến input của bộc lọc (html element)
@@ -75,7 +99,8 @@ computed(() => {
           </template>
         </el-input>
       </div>
-      <el-scrollbar class="list">
+      <el-skeleton v-show="useChatStore().loadingData" class="list-skeleton" :count="4" animated />
+      <el-scrollbar v-show="!useChatStore().loadingData" class="list">
         <template v-for="value in useChatStore().contacts" :key="value.email">
           <Contact
             :email="value.email"

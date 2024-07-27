@@ -1,7 +1,5 @@
-export enum MessageType {
-  TEXT = 0,
-  LINK = 1
-}
+import MessageStatus from "@/constants/message-status"
+import MessageType from "@/constants/message-type"
 
 export interface MessageResponse {
   id?: number
@@ -10,6 +8,7 @@ export interface MessageResponse {
   type: MessageType
   content: string
   sendedAt: Date
+  status: MessageStatus
 }
 
 export type MessageResponseData = ApiResponseData<MessageResponse[]>

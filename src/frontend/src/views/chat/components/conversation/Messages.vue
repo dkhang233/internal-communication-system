@@ -2,7 +2,7 @@
 import Message from "./Message.vue"
 import { MessageData, useChatStore } from "@/store/modules/chat"
 import TextMsg from "./message-types/TextMsg.vue"
-import { computed, onMounted, onUpdated, ref, watchEffect } from "vue"
+import { computed, onMounted, ref, watchEffect } from "vue"
 
 const msgs: any = ref(null)
 const messages = ref<MessageData[]>([])
@@ -37,8 +37,14 @@ onMounted(() => {
       <span>Start new chat with your colleague</span>
     </div>
     <el-scrollbar ref="msgs" class="msgs-container-messages" v-show="!isNewChat">
-      <template v-for="msg in messages">
-        <Message :type="msg.type" :sended-at="msg.sendedAt" :incoming="msg.incoming">
+      <template v-for="(msg, index) in messages" :key="index">
+        <Message
+          :type="msg.type.toString()"
+          :sended-at="msg.sendedAt"
+          :incoming="msg.incoming"
+          :status="msg.status.toString()"
+          :last-message="index + 1 === messages.length"
+        >
           <TextMsg :content="msg.content"></TextMsg>
         </Message>
       </template>

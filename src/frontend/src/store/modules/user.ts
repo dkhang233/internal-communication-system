@@ -7,8 +7,6 @@ import { getToken, removeToken, setEmail, setToken } from "@/utils/cache/cookies
 import { resetRouter } from "@/router"
 import { loginApi } from "@/api/login"
 import { type LoginRequestData } from "@/api/login/types/login"
-import routeSettings from "@/config/route"
-import Roles from "@/constants/roles"
 import { connectWS, disconnectWS } from "@/utils/websocket"
 import { UserInfo } from "@/api/user/types/user"
 import { getUserInfoApi, searchUserApi } from "@/api/user"
@@ -38,9 +36,20 @@ export const useUserStore = defineStore("user", () => {
     email.value = data.email
     setEmail(email.value)
     username.value = data.username
-    console.log(username.value)
     // Verify whether the returned roles is a non-empty array, otherwise insert a default role that has no effect to prevent the routing guard logic from entering an infinite loop.
-    roles.value = data.roles?.length > 0 ? convertRoles(data.roles) : routeSettings.defaultRoles
+    console.log(roles.value)
+    switch (data.roles[0]) {
+      case "ADMIN":
+        roles.value.push("ADMIN")
+      case "MANAGER":
+        roles.value.push("MANAGER")
+      case "EMPLOYEE":
+        roles.value.push("EMPLOYEE")
+        console.log(roles.value)
+        break
+      default:
+        break
+    }
   }
   /** Simulate character changes */
   const changeRoles = async (role: string) => {
@@ -49,21 +58,6 @@ export const useUserStore = defineStore("user", () => {
     setToken(newToken)
     // Refresh the page instead of logging in again
     window.location.reload()
-  }
-
-  /** Convert roles */
-  const convertRoles = (input: number[]): string[] => {
-    let roles = []
-    for (let i = 0; i < input.length; i++) {
-      if (input[i] === 0) {
-        roles.push(Roles.ADMIN)
-      } else if (input[i] === 1) {
-        roles.push(Roles.MANAGER)
-      } else if (input[i] === 2) {
-        roles.push(Roles.EMPLOYEE)
-      }
-    }
-    return roles
   }
 
   /** Log out */

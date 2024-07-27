@@ -7,7 +7,7 @@ export interface ContactRequestData {
 export interface UserInfo {
   username: string
   email: string
-  roles: number[]
+  roles: string[]
   avatar: string
   status: number
 }

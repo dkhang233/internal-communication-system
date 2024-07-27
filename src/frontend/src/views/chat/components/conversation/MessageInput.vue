@@ -2,41 +2,30 @@
 import { ref } from "vue"
 import { useChatStore, handleSendedAt, MessageData } from "@/store/modules/chat"
 import EmojiPicker from "vue3-emoji-picker"
-import { MessageResponse, MessageType } from "@/api/chat/types/message"
-import { useUserStore } from "@/store/modules/user"
+import MessageStatus from "@/constants/message-status"
+import MessageType from "@/constants/message-type"
 
 const msgInput = ref(null)
 const input = ref<string>("")
 const showEmoji = ref<boolean>(false)
 
+// Chèn emoji vào tin nhắn
 const onSelectEmoji = (emoji: any) => {
   input.value += emoji.i
 }
 
+// Gửi tin nhắn
 const sendMsg = () => {
   if (input && input.value !== "") {
     let message: MessageData = {
       type: MessageType.TEXT,
       content: input.value,
       sendedAt: handleSendedAt(new Date()),
-      incoming: false
+      incoming: false,
+      status: MessageStatus.SENDING
     }
-
-    let currentContact = useChatStore().contacts[useChatStore().currentChatUser]
-    currentContact.isNewContact = false
-    let msgs = useChatStore().conversations.get(currentContact.email) || []
-    msgs.push(message)
-    useChatStore().conversations.set(currentContact.email, msgs)
+    useChatStore().sendMessage(message)
     input.value = ""
-    useChatStore().hasNewMessage = true
-    let messageRequest: MessageResponse = {
-      sender: useUserStore().email,
-      recipient: currentContact.email,
-      type: message.type,
-      content: message.content,
-      sendedAt: new Date()
-    }
-    useChatStore().sendMessage(messageRequest)
   }
 }
 

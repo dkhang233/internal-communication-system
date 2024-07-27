@@ -43,8 +43,8 @@ public class ChatController {
     // Lấy tất cả tin nhắn giữa người dùng đang đăng nhập và một người dùng khác
     @GetMapping("/messages/contact")
     public ApiResponseData<List<Message>> getMessagesForSpecificContact(Authentication authentication,
-            @RequestParam(value = "contactId") String contactId) {
-        return  ApiResponseData.success(chatService.getMessageForSpecificContact(authentication, contactId));
+            @RequestParam(value = "contactId") String contactId, @RequestParam(value = "pageNumber") int pageNumber) {
+        return  ApiResponseData.success(chatService.getMessageForSpecificContact(authentication, contactId, pageNumber));
     }
 
 }
