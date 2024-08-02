@@ -18,6 +18,8 @@ import "vxe-table-plugin-element/dist/style.css"
 import "@/styles/index.scss"
 import "vue3-emoji-picker/css"
 import { connectWS } from "./utils/websocket"
+import relativeTime from "dayjs/plugin/relativeTime"
+import dayjs from "dayjs"
 
 const app = createApp(App)
 
@@ -27,6 +29,9 @@ loadPlugins(app)
 loadSvg(app)
 /** Load custom instructions */
 loadDirectives(app)
+
+// import relativeTime from 'dayjs/plugin/relativeTime' // ES 2015
+dayjs.extend(relativeTime)
 
 /** Connect to websocket */
 connectWS()

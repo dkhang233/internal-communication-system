@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 @RestController
 @RequestMapping("${api.prefix}/auth")
 @RequiredArgsConstructor
-@CrossOrigin(originPatterns = "**")
 public class AuthenticationController {
     
     private final JwtService jwtService;

@@ -4,8 +4,9 @@ import MessageInput from "./MessageInput.vue"
 import StyledBadge from "../contact/StyledBadge.vue"
 import { Contact, useChatStore } from "@/store/modules/chat"
 import { computed, ref, watchEffect } from "vue"
-import { UserInfo } from "@/api/login/types/login"
 import { useUserStore } from "@/store/modules/user"
+import { UserInfo } from "@/api/user/types/user"
+import defaultAvatar from "@/assets/layouts/default-avatar-0.png?url"
 
 // Tham chiếu đến input (html element)
 const searchInput = ref<any>(null)
@@ -15,6 +16,9 @@ const name = ref<String>("User")
 
 // Trạng thái liên hệ hiển thị lên header
 const online = ref<boolean>(false)
+
+// Avatar của liên hệ hiển thị lên header
+const avatar = ref<string>("")
 
 // Có hiện thị kết quả tìm kiếm hay không
 const showSearchResult = ref<boolean>(false)
@@ -49,6 +53,7 @@ const handleClickUser = (user: UserInfo) => {
   if (useChatStore().conversations.has(user.email)) {
     // Nếu liên hệ cũ => chỉ cần hiện thị tin nhắn đã nhắn
     useChatStore().currentChatUser = useChatStore().contacts.findIndex((e) => e.email === user.email)
+    useChatStore().currentChatEmail = user.email
     useChatStore().showSendNewMessage = false
   } else {
     // Nếu liên hệ mới => đẩy thêm vào trong danh sách liên hệ
@@ -56,6 +61,8 @@ const handleClickUser = (user: UserInfo) => {
       email: user.email,
       name: user.username,
       online: user.status ? true : false,
+      unreadMessage: 0,
+      avatar: user.avatar,
       isNewContact: true,
       show: true
     }
@@ -65,6 +72,7 @@ const handleClickUser = (user: UserInfo) => {
 
     // Thiết lập người liên hệ đang chat là liên hệ mới ở trên
     useChatStore().currentChatUser = 0
+    useChatStore().currentChatEmail = newContact.email
 
     // Hiển thị giao diện nhắn tin thay vì tìm kiếm liên hệ
     useChatStore().showSendNewMessage = false
@@ -80,6 +88,7 @@ const hasResult = computed(() => {
 watchEffect(() => {
   name.value = useChatStore().contacts[useChatStore().currentChatUser]?.name || "User"
   online.value = useChatStore().contacts[useChatStore().currentChatUser]?.online || false
+  avatar.value = useChatStore().contacts[useChatStore().currentChatUser]?.avatar || defaultAvatar
 })
 
 // Khi người dùng ấn vào New chat => focus vào ô tìm kiếm liên hệ
@@ -90,6 +99,7 @@ watchEffect(() => {
 <template>
   <div class="conversation-container">
     <div class="conversation-header">
+      <el-icon v-if="false" class="return" size="100" @click="useChatStore().showContacts = true"><Back /></el-icon>
       <div v-if="useChatStore().showSendNewMessage" class="conversation-header-search">
         <span>Đến: </span>
         <el-input
@@ -106,15 +116,9 @@ watchEffect(() => {
       </div>
       <div v-if="!useChatStore().showSendNewMessage" class="conversation-header-info">
         <styledBadge class="avatar" v-if="online">
-          <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png">
-            <img src="https://cube.elemecdn.com/e/fd/0fc7d20532fdaf769a25683617711png.png" />
-          </el-avatar>
+          <el-avatar :src="avatar"> </el-avatar>
         </styledBadge>
-        <el-avatar
-          class="avatar"
-          v-if="!online"
-          src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
-        />
+        <el-avatar class="avatar" v-if="!online" :src="avatar" />
         <div class="info">
           <div class="name">{{ name || "User" }}</div>
           <div class="status">{{ online ? "Online" : "Offline" }}</div>
@@ -125,11 +129,7 @@ watchEffect(() => {
       <el-card v-show="showSearchResult" class="conversation-body-result">
         <el-scrollbar v-show="!hasResult" max-height="180px">
           <div class="conversation-body-result-item" v-for="i in searchResult" @click="handleClickUser(i)">
-            <el-avatar
-              class="avatar"
-              v-if="!online"
-              src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
-            />
+            <el-avatar class="avatar" v-if="!online" :src="avatar" />
             <div>
               <div>{{ i.username }}</div>
               <div>{{ i.email }}</div>
@@ -155,11 +155,14 @@ watchEffect(() => {
   }
 
   &-header {
+    display: flex;
+    align-items: center;
     box-shadow: 0px 0.2px var(--el-text-color-regular);
     height: 10%;
     padding: 3px;
     align-content: center;
     &-search {
+      flex-grow: 1;
       display: flex;
       justify-content: space-around;
       padding: 5px 10px;
@@ -170,7 +173,15 @@ watchEffect(() => {
 
     &-info {
       display: flex;
-      // border-bottom: 2px;
+    }
+
+    .return {
+      width: 35px;
+      height: 100%;
+      padding: 5px;
+      &:hover {
+        opacity: 30%;
+      }
     }
   }
 

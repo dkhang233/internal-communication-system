@@ -3,9 +3,14 @@ import Message from "./Message.vue"
 import { MessageData, useChatStore } from "@/store/modules/chat"
 import TextMsg from "./message-types/TextMsg.vue"
 import { computed, onMounted, ref, watchEffect } from "vue"
+import TimeLine from "./message-types/TimeLine.vue"
 
 const msgs: any = ref(null)
 const messages = ref<MessageData[]>([])
+
+// Xử lí khi người dùng cuộn xem tin nhắn
+const handleScrollMessages = (distance: { scrollTop: number; scrollLeft: number }) => {}
+
 watchEffect(() => {
   if (useChatStore().hasNewMessage) {
     setTimeout(() => {
@@ -32,21 +37,21 @@ onMounted(() => {
 
 <template>
   <div class="msgs-container">
-    <div class="msgs-container-newchat" v-show="isNewChat">
-      <SvgIcon class="msgs-container-newchat-image" name="new-chat"></SvgIcon>
+    <div class="newchat" v-show="isNewChat">
+      <SvgIcon class="newchat-image" name="new-chat"></SvgIcon>
       <span>Start new chat with your colleague</span>
     </div>
-    <el-scrollbar ref="msgs" class="msgs-container-messages" v-show="!isNewChat">
+    <el-scrollbar ref="msgs" v-show="!isNewChat" @scroll="handleScrollMessages">
       <template v-for="(msg, index) in messages" :key="index">
         <Message
           :type="msg.type.toString()"
-          :sended-at="msg.sendedAt"
           :incoming="msg.incoming"
-          :status="msg.status.toString()"
+          :status="msg.status?.toString()"
           :last-message="index + 1 === messages.length"
         >
-          <TextMsg :content="msg.content"></TextMsg>
+          <TextMsg v-if="msg.type === 'TEXT'" :content="msg.content" :sent-at="msg.sendedAt"></TextMsg>
         </Message>
+        <TimeLine v-if="msg.type === 'TIMELINE'" :content="msg.content"></TimeLine>
       </template>
     </el-scrollbar>
   </div>
@@ -57,7 +62,7 @@ onMounted(() => {
   height: 100%;
   padding: 7px 24px;
 
-  &-newchat {
+  .newchat {
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -68,11 +73,6 @@ onMounted(() => {
       width: 80%;
       height: 300px;
     }
-  }
-
-  &-messages {
-    display: flex;
-    flex-direction: column;
   }
 }
 </style>

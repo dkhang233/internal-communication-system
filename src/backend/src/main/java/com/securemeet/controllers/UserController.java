@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("${api.prefix}/users")
-@CrossOrigin(originPatterns = "**")
 public class UserController {
     private final UserService userService;
     private final SimpMessagingTemplate simpMessagingTemplate;
@@ -43,7 +42,7 @@ public class UserController {
     }
 
     @GetMapping("/contact")
-    public ApiResponseData<ContactResponse> getSpecificContact(@RequestParam(value = "contactId") String contactId,Authentication authentication) {
+    public ApiResponseData<List<ContactResponse>> getSpecificContact(@RequestParam(value = "contactId") String contactId,Authentication authentication) {
         return ApiResponseData.success(userService.getContactByContactId(contactId,authentication));
     }
     @GetMapping("/search")

@@ -20,6 +20,7 @@ export type ContactResponseData = ApiResponseData<
     contactId: string
     contactUsername: string
     status: number
+    avatar: string
     contactTime: Date
   }[]
 >

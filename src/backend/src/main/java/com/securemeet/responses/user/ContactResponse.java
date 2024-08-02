@@ -16,5 +16,6 @@ public class ContactResponse {
     private String contactId;
     private String contactUsername;
     private int status;
+    private  String avatar;
     private Date contactTime;
 }

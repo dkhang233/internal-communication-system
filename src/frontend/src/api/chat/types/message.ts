@@ -2,7 +2,7 @@ import MessageStatus from "@/constants/message-status"
 import MessageType from "@/constants/message-type"
 
 export interface MessageResponse {
-  id?: number
+  id: number
   sender: string
   recipient: string
   type: MessageType
@@ -12,3 +12,4 @@ export interface MessageResponse {
 }
 
 export type MessageResponseData = ApiResponseData<MessageResponse[]>
+export type SendMessageResponseData = ApiResponseData<MessageResponse>

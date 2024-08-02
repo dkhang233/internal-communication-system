@@ -56,10 +56,9 @@ public class UserService {
     }
 
     // Lấy thông tin về liên hệ có Id xác định của người dùng hiện tại
-    public ContactResponse getContactByContactId(String contactId,Authentication authentication) {
-        ContactResponse res = contactRepository.findByOwnerIdAndContactId(authentication.getName(), contactId)
-                .orElseThrow(() -> new DataNotFoundException("Not found contact"));
-        return res;
+    public List<ContactResponse> getContactByContactId(String contactId,Authentication authentication) {
+        return List.of(contactRepository.findByOwnerIdAndContactId(authentication.getName(), contactId)
+                .orElseThrow(() -> new DataNotFoundException("Not found contact")));
     }
 
     // Tìm kiếm người dùng

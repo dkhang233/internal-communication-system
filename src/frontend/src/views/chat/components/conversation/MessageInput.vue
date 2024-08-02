@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref } from "vue"
-import { useChatStore, handleSendedAt, MessageData } from "@/store/modules/chat"
+import { useChatStore, MessageData } from "@/store/modules/chat"
 import EmojiPicker from "vue3-emoji-picker"
 import MessageStatus from "@/constants/message-status"
 import MessageType from "@/constants/message-type"
@@ -18,9 +18,10 @@ const onSelectEmoji = (emoji: any) => {
 const sendMsg = () => {
   if (input && input.value !== "") {
     let message: MessageData = {
+      id: -1,
       type: MessageType.TEXT,
       content: input.value,
-      sendedAt: handleSendedAt(new Date()),
+      sendedAt: new Date(),
       incoming: false,
       status: MessageStatus.SENDING
     }

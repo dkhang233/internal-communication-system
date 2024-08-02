@@ -1,12 +1,25 @@
 <script lang="ts" setup>
 interface Props {
-  time: string
+  content: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  time: "--:--"
+  content: ""
 })
 </script>
 <template>
-  <el-divider> {{ time }} </el-divider>
+  <div class="timeline-container">
+    <el-divider class="main">{{ content }}</el-divider>
+  </div>
 </template>
+<style lang="scss">
+.timeline-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+
+  .main {
+    width: 50%;
+  }
+}
+</style>

@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 @RestController()
 @RequestMapping("${api.prefix}/meets/")
 @RequiredArgsConstructor
-@CrossOrigin(originPatterns = "**")
 public class MeetController {
     private final MeetService meetService;
     private final SimpMessagingTemplate template;

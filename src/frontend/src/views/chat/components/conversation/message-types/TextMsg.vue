@@ -1,16 +1,21 @@
 <script lang="ts" setup>
+import dayjs from "dayjs"
+
 interface Props {
   content: string
+  sentAt: Date
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  content: ""
+  content: "",
+  sentAt: () => new Date()
 })
 </script>
 
 <template>
   <div class="msg-content">
-    {{ content }}
+    <div class="main">{{ content }}</div>
+    <div class="time">{{ dayjs(sentAt).format("HH:mm") }}</div>
   </div>
 </template>
 
@@ -35,5 +40,9 @@ const props = withDefaults(defineProps<Props>(), {
   padding: 15px;
   border-radius: 10px;
   text-align: start;
+  .time {
+    margin-top: 8px;
+    font-size: 10px;
+  }
 }
 </style>

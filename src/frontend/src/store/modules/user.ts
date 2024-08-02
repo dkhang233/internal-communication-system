@@ -37,7 +37,6 @@ export const useUserStore = defineStore("user", () => {
     setEmail(email.value)
     username.value = data.username
     // Verify whether the returned roles is a non-empty array, otherwise insert a default role that has no effect to prevent the routing guard logic from entering an infinite loop.
-    console.log(roles.value)
     switch (data.roles[0]) {
       case "ADMIN":
         roles.value.push("ADMIN")
@@ -45,7 +44,6 @@ export const useUserStore = defineStore("user", () => {
         roles.value.push("MANAGER")
       case "EMPLOYEE":
         roles.value.push("EMPLOYEE")
-        console.log(roles.value)
         break
       default:
         break

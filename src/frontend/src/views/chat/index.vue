@@ -4,7 +4,6 @@ import Contact from "./components/contact/Contact.vue"
 import Conversation from "./components/conversation/Conversation.vue"
 import { useDevice } from "@/hooks/useDevice"
 import { useChatStore } from "@/store/modules/chat"
-import { useFullscreenLoading } from "@/hooks/useFullscreenLoading"
 
 const svg = `
   <path class="path" d="
@@ -43,14 +42,18 @@ const { isMobile } = useDevice()
 // Có hiển thị bộ lọc hay không
 const showFilter = ref<boolean>(false)
 
-// Hiển thị liên hệ tương ứng khi người dùng chọn trong kết quả lọc
+// Hiển thị liên hệ tương ứng với liên hệ mà người dùng click vào
 const handleClickContact = (email: string) => {
   if (useChatStore().contacts.at(0)?.isNewContact) {
     useChatStore().contacts.shift()
   }
   useChatStore().showSendNewMessage = false
   useChatStore().currentChatUser = useChatStore().contacts.findIndex((c) => c.email === email)
+  useChatStore().currentChatEmail = email
   useChatStore().hasNewMessage = true
+
+  // Cập nhập trạng thái đọc tin nhắn
+  useChatStore().readMessage()
 }
 
 // Lọc liên hệ theo giá trị mà người dùng nhập
@@ -70,7 +73,7 @@ computed(() => {
 </script>
 <template>
   <div class="app-container">
-    <div class="contacts" v-if="!isMobile">
+    <div class="contacts" v-if="1 || !isMobile || useChatStore().showContacts">
       <div class="contacts-header">
         <div v-if="!showFilter" class="contacts-header-main">
           <span class="contacts-header-main-title">Chat</span>
@@ -106,13 +109,15 @@ computed(() => {
             :email="value.email"
             :name="value.name"
             :online="value.online"
+            :unreadMessage="value.unreadMessage"
+            :avatar="value.avatar"
             v-show="handleFilter(value.name)"
             @click="handleClickContact(value.email)"
           />
         </template>
       </el-scrollbar>
     </div>
-    <Conversation class="conversation" />
+    <Conversation v-if="1 || !isMobile || !useChatStore().showContacts" class="conversation" />
   </div>
 </template>
 <style lang="scss" scoped>
@@ -124,7 +129,8 @@ computed(() => {
 }
 
 .contacts {
-  width: 30%;
+  min-width: 25%;
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
   padding-right: 10px;

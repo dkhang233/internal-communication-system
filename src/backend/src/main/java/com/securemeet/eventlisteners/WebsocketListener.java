@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
+import java.util.Objects;
+
 @RequiredArgsConstructor
 @Component
 public class WebsocketListener {
@@ -25,8 +27,10 @@ public class WebsocketListener {
      */
     @EventListener
     public void handleOnlineStatus(SessionConnectedEvent event) {
-        UserStatusDto userStatusDto = userService.setStatus(event.getUser().getName(), 1);
-        simpMessagingTemplate.convertAndSend("/topic/user/status", userStatusDto);
+        if(Objects.nonNull(event.getUser())) {
+            UserStatusDto userStatusDto = userService.setStatus(event.getUser().getName(), 1);
+            simpMessagingTemplate.convertAndSend("/topic/user/status", userStatusDto);
+        }
     }
 
     /**
@@ -38,7 +42,9 @@ public class WebsocketListener {
      */
     @EventListener
     public void handleOfflineStatus(SessionDisconnectEvent event) {
-        UserStatusDto userStatusDto = userService.setStatus(event.getUser().getName(), 0);
-        simpMessagingTemplate.convertAndSend("/topic/user/status", userStatusDto);
+        if(Objects.nonNull(event.getUser()))   {
+            UserStatusDto userStatusDto = userService.setStatus(event.getUser().getName(), 0);
+            simpMessagingTemplate.convertAndSend("/topic/user/status", userStatusDto);
+        }
     }
 }

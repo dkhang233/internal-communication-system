@@ -4,11 +4,10 @@ import java.util.Date;
 import java.util.List;
 
 import com.securemeet.enums.MessageStatus;
-import com.securemeet.enums.MessageType;
-import com.securemeet.exceptionhandlers.custom.InvalidDataException;
-import com.securemeet.utils.BeanUtils;
+import com.securemeet.responses.message.ReadMessageResponse;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -29,8 +28,9 @@ public class ChatService {
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
     private final ContactRepository contactRepository;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
-    public Message handleMessage(MessageDto input) {
+    public Message handleSendMessage(MessageDto input) {
         // Kiểm tra người gửi có tồn tại hay không
         User sender = userRepository.findById(input.getSender())
                 .orElseThrow(() -> new DataNotFoundException("Sender is incorrect"));
@@ -49,28 +49,37 @@ public class ChatService {
                 .content(input.getContent())
                 .sendedAt(new Date())
                 .status(MessageStatus.SUCCESS).build();
+        message = messageRepository.save(message);
+
+        if(!input.getSender().equals(input.getRecipient())){
+            simpMessagingTemplate.convertAndSendToUser( // chuyển đổi và gửi đến hàng đợi người dùng
+                    message.getRecipient(), // người nhận
+                    "/queue/receiveMsg", // điểm đến
+                    message // payload
+            );
+        }
         // trả về cho người dùng
-        return messageRepository.save(message);
+        return  message;
     }
 
-    /*
-     * Lấy 10 messages mới nhất giữa người liên hệ có id = contactId và người dùng
+    /**
+     * Lấy các messages mới nhất giữa người liên hệ có id = contactId và người dùng, có phân trang
      */
-    public List<Message> getMessageForSpecificContact(Authentication authentication, String contactId, int pageNumber) {
+    public List<Message> getMessageForSpecificContact(Authentication authentication, String contactId, int pageNumber , int quantity) {
         String myId = authentication.getName();
-        Pageable pageable = PageRequest.of(pageNumber,10);
+        Pageable pageable = PageRequest.of(pageNumber,quantity);
         return messageRepository.getMessagesForSpecificContact(myId, contactId, pageable).toList();
     }
 
     /**
-     * Lấy tất cả messages liên quan đến người dùng hiện tại
+     * Lấy messages liên quan đến người dùng hiện tại, có phân trang
      */
-    public List<Message> getAllMessages() {
-        List<Message> result = messageRepository.findAll();
-        return result;
+    public List<Message> getMessages(int page, int quantity , Authentication authentication) {
+        Pageable pageable = PageRequest.of(page,quantity);
+        return messageRepository.getMessages(authentication.getName(), pageable).toList();
     }
 
-    /*
+    /**
      * Tồn tại liên hệ giữa người gửi tin nhắn và người nhận tin nhắn
      * => Gửi tin nhắn
      * Nếu chưa tồn tại => Lưu liên hệ => Gửi tin nhắn
@@ -93,5 +102,13 @@ public class ChatService {
         }else { // Nếu tồn tại rồi thì cập nhập thời gian nhắn tin gần nhất
             contactRepository.updateContactTime(receiver,sender,contactTime);
         }
+    }
+
+    public void handleReadMessages(String contactId, int lastMessageId, int quantity, Authentication authentication) {
+        if(lastMessageId < 0) return;
+        if(quantity < 1)  return;
+        messageRepository.updateReadMessageStatus( authentication.getName(),contactId,lastMessageId,quantity);
+        simpMessagingTemplate.convertAndSendToUser(contactId,"/queue/updateMsgStatus", new ReadMessageResponse(authentication.getName(),lastMessageId,quantity));
+
     }
 }

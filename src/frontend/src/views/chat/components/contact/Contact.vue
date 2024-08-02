@@ -1,28 +1,41 @@
 <script lang="ts" setup>
-import { Contact, MessageData, useChatStore } from "@/store/modules/chat"
+import { MessageData, useChatStore } from "@/store/modules/chat"
 import StyledBadge from "./StyledBadge.vue"
-import { ref, watchEffect } from "vue"
+import { computed, ref, watchEffect } from "vue"
 import MessageType from "@/constants/message-type"
+import dayjs from "dayjs"
+import defaultAvatar from "@/assets/layouts/default-avatar-0.png?url"
+
 interface Props {
   email: string
   name: string
   online: boolean
+  unreadMessage: number
+  avatar: string
 }
 
 const props = withDefaults(defineProps<Props>(), {})
+
 const newestMessage = ref<MessageData>({
+  id: -1,
   type: MessageType.TEXT,
   content: "",
-  sendedAt: "--:--",
+  sendedAt: new Date(),
   incoming: false,
   status: "SENDING"
 })
 
+const handleTime = (input: Date) => {
+  if (dayjs().isAfter(dayjs(input), "day")) return dayjs(input).format("DD/MM")
+  return dayjs(input).format("HH:mm")
+}
+
 watchEffect(() => {
   newestMessage.value = useChatStore().conversations.get(props.email)?.at(-1) || {
+    id: -1,
     type: MessageType.TEXT,
     content: "",
-    sendedAt: "--:--",
+    sendedAt: new Date(),
     incoming: false,
     status: "SENDING"
   }
@@ -33,24 +46,17 @@ watchEffect(() => {
     <div class="box">
       <div class="body">
         <styledBadge class="avatar" v-show="online">
-          <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png">
-            <img src="https://cube.elemecdn.com/e/fd/0fc7d20532fdaf769a25683617711png.png" />
-          </el-avatar>
+          <el-avatar :src="avatar || defaultAvatar"></el-avatar>
         </styledBadge>
-        <el-avatar
-          class="avatar"
-          v-show="!online"
-          src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
-        >
-          <img src="https://cube.elemecdn.com/e/fd/0fc7d20532fdaf769a25683617711png.png" />
-        </el-avatar>
+        <el-avatar class="avatar" v-show="!online" :src="avatar || defaultAvatar"> </el-avatar>
         <div class="detail">
           <div class="name">{{ name }}</div>
           <div class="message">{{ newestMessage.content !== "" ? newestMessage.content : "New chat" }}</div>
         </div>
       </div>
       <div class="footer">
-        <div>{{ newestMessage.sendedAt !== "--:--" ? newestMessage.sendedAt : "" }}</div>
+        <div class="time">{{ handleTime(newestMessage.sendedAt) }}</div>
+        <el-badge v-if="unreadMessage" class="unread-msg" :value="unreadMessage"></el-badge>
       </div>
     </div>
   </div>
@@ -62,6 +68,7 @@ watchEffect(() => {
 }
 
 .contact-container {
+  position: relative;
   height: 6rem;
   border-radius: 0.5rem;
   margin: 10px;
@@ -70,6 +77,22 @@ watchEffect(() => {
   &:hover {
     cursor: pointer;
     opacity: 0.7;
+  }
+
+  .footer {
+    .unread-msg {
+      position: absolute;
+      top: 48px;
+      right: 20px;
+      margin-top: 5px;
+    }
+
+    .time {
+      position: absolute;
+      top: 30px;
+      right: 12px;
+      font-size: 13px;
+    }
   }
 }
 
