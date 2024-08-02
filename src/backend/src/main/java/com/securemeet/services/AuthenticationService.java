@@ -3,10 +3,8 @@ package com.securemeet.services;
 import java.util.Date;
 
 import com.securemeet.exceptionhandlers.custom.InvalidDataException;
-import com.securemeet.utils.BeanUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,7 +13,6 @@ import com.securemeet.dtos.user.LoginUserDto;
 import com.securemeet.dtos.user.RegisterUserDto;
 import com.securemeet.models.user.User;
 import com.securemeet.repositories.UserRepository;
-import com.securemeet.responses.user.UserInfo;
 
 import lombok.RequiredArgsConstructor;
 

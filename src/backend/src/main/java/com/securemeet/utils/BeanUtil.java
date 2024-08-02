@@ -5,7 +5,7 @@ import org.springframework.util.ReflectionUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BeanUtils {
+public class BeanUtil {
 
     private static void  handleReflectionException(Exception e){
         ReflectionUtils.handleReflectionException(e);
