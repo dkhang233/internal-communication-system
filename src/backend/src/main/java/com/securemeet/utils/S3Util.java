@@ -14,26 +14,27 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class S3Util {
-    private  final S3Client s3Client;
+    private final S3Client s3Client;
 
     /**
-     * Check whether the storage bucket exists
-     * @return boolean
+     * Kiểm tra tên bucket đã tồn tại chưa
+     * @param bucketName - tên bucket
+     * @return boolean  - kết quả kiểm tra
      */
     public boolean bucketExists(String bucketName){
         return s3Client.listBuckets().buckets().stream().anyMatch((bucket) -> bucket.name().equals(bucketName));
     }
 
     /**
-     * Create storage bucket
-     * @return Boolean
+     * Tạo bucket để lưu trữ
+     * @param bucketName - Tên bucket cần tạo
+     * @return Boolean  - Kết quả tạo bucket
      */
     public boolean createBucket(String bucketName){
         try {
@@ -49,8 +50,9 @@ public class S3Util {
     }
 
     /**
-     * Delete storage bucket
-     * @return Boolean
+     * Xóa bucket
+     * @param bucketName - tên bucket cần xóa
+     * @return boolean - Kết quả xóa
      */
     public boolean deleteBucket(String bucketName){
         try {
@@ -65,22 +67,54 @@ public class S3Util {
         return true;
     }
 
+    /**
+     * Upload file lên bucket
+     * @param bucketName - tên bucket
+     * @param path - đường dẫn 
+     * @param file - file cần upload
+     * @return String - tên của object tương ứng với file sau khi upload lên bucket
+     */
     public String upload(String bucketName, String path, MultipartFile file){
         String originalFileName = file.getOriginalFilename();
         if(StringUtils.isBlank(originalFileName)){
             throw new InvalidDataException("Filename is blank");
         }
-        String fileName =  UUID.randomUUID() + originalFileName;
-        String objectName = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE) + "/" + fileName;
+        String fileName =  UUID.randomUUID()+"-"+ originalFileName;
+        String objectName = path + "/" + LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE) + "/" + fileName;
+        
         try {
             PutObjectRequest request = PutObjectRequest.builder()
                     .bucket(bucketName)
+                    .key(objectName)
                     .build();
             RequestBody body = RequestBody.fromInputStream(file.getInputStream(),file.getSize());
             s3Client.putObject(request,body);
         }catch(Exception e){
             log.error(e.getMessage());
         }
+        return  objectName;
+    }
+
+    public  String upload(String bucketName, String path , byte[] file , String originalFileName , String contentType){
+        if(StringUtils.isBlank(originalFileName)){
+            throw new InvalidDataException("Filename is blank");
+        }
+        
+        String fileName =  UUID.randomUUID()+"-"+ originalFileName;
+        String objectName = path + "/" + LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE) + "/" + fileName;
+
+        try {
+            PutObjectRequest request = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(objectName)
+                    .contentType(contentType)
+                    .build();
+            RequestBody body = RequestBody.fromBytes(file);
+            s3Client.putObject(request,body);
+        }catch(Exception e){
+            log.error(e.getMessage());
+        }
+        
         return  objectName;
     }
 }

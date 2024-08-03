@@ -7,8 +7,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.converter.DefaultContentTypeResolver;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.converter.MessageConverter;
@@ -16,6 +18,7 @@ import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.messaging.support.MessageHeaderAccessor;
@@ -23,6 +26,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.util.MimeTypeUtils;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
@@ -32,6 +36,8 @@ import com.securemeet.services.JwtService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import static java.util.Objects.isNull;
 
 @Configuration
 @EnableWebSocketMessageBroker
@@ -89,7 +95,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 try {
                     accessor.setLeaveMutable(true);
                 } catch (Exception e) {
-                    log.debug(e.getMessage());
+                    log.error(e.getMessage());
                 }
                 return MessageBuilder.createMessage(message.getPayload(), accessor.getMessageHeaders());
             }
@@ -108,6 +114,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
         return false;// cần trả về false để registerDefault=false (f5 phương thức để xem chi tiết)
     }
+
+
 
     @Bean
     public MappingJackson2MessageConverter mappingJackson2MessageConverter(ObjectMapper objectMapper) {
