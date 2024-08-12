@@ -19,6 +19,7 @@ import "@/styles/index.scss"
 import "vue3-emoji-picker/css"
 import { connectWS } from "./utils/websocket"
 import relativeTime from "dayjs/plugin/relativeTime"
+import arraySupport from "dayjs/plugin/arraySupport"
 import dayjs from "dayjs"
 
 const app = createApp(App)
@@ -32,6 +33,7 @@ loadDirectives(app)
 
 // import relativeTime from 'dayjs/plugin/relativeTime' // ES 2015
 dayjs.extend(relativeTime)
+dayjs.extend(arraySupport)
 
 /** Connect to websocket */
 connectWS()

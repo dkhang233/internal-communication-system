@@ -1,5 +1,6 @@
 import MessageStatus from "@/constants/message-status"
 import MessageType from "@/constants/message-type"
+import { Dayjs } from "dayjs"
 
 export interface MessageResponse {
   id: number
@@ -7,7 +8,7 @@ export interface MessageResponse {
   recipient: string
   type: MessageType
   content: string
-  sendedAt: Date
+  sendedAt: Dayjs
   status: MessageStatus
 }
 

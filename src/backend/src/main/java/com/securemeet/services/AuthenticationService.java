@@ -1,5 +1,6 @@
 package com.securemeet.services;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import com.securemeet.exceptionhandlers.custom.InvalidDataException;
@@ -34,6 +35,7 @@ public class AuthenticationService {
                 .role(input.getRole())
                 .password(passwordEncoder.encode(input.getPassword()))
                 .username(input.getUsername())
+                .avatar("")
                 .build();
         userRepository.save(user);
     }
@@ -44,7 +46,7 @@ public class AuthenticationService {
                 new UsernamePasswordAuthenticationToken(loginUserDto.getEmail(), loginUserDto.getPassword()));
 
         // Cập nhập thời gian lần cuối đăng nhập
-        userRepository.setLastLoginTime(loginUserDto.getEmail(), new Date());
+        userRepository.setLastLoginTime(loginUserDto.getEmail(), LocalDateTime.now());
 
         return userRepository.findByEmail(loginUserDto.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("Not found user"));

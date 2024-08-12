@@ -1,14 +1,14 @@
 <script lang="ts" setup>
-import dayjs from "dayjs"
+import dayjs, { Dayjs } from "dayjs"
 
 interface Props {
   content: string
-  sentAt: Date
+  sentAt: Dayjs
 }
 
 const props = withDefaults(defineProps<Props>(), {
   content: "",
-  sentAt: () => new Date()
+  sentAt: () => dayjs()
 })
 </script>
 
@@ -22,6 +22,7 @@ const props = withDefaults(defineProps<Props>(), {
 <style lang="scss" scoped>
 .in-msg {
   .msg-content {
+    word-wrap: break-word;
     background-color: var(--el-bg-color-page);
   }
 }
@@ -30,6 +31,7 @@ const props = withDefaults(defineProps<Props>(), {
   .msg-content {
     background-color: var(--el-color-primary);
     color: white !important;
+    word-wrap: break-word;
   }
 }
 .msg-content {

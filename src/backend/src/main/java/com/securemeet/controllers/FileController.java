@@ -23,4 +23,9 @@ public class FileController {
         return  ApiResponseData.success(fileService.uploadImage(image));
     }
 
+    @GetMapping("/download")
+    public byte[] download(@RequestParam String filePath) {
+        return fileService.download(filePath);
+    }
+
 }

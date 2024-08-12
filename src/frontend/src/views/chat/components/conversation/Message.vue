@@ -43,6 +43,7 @@ const showReadStatus = computed(() => {
   display: flex;
   flex-direction: row;
   margin: 5px 30px 0px 10px;
+  caret-color: transparent;
 }
 
 .in-msg {

@@ -1,6 +1,6 @@
 package com.securemeet.models.user;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -46,7 +46,7 @@ public class User implements UserDetails {
     private int status;
 
     @Column(name = "last_login_time")
-    private Date lastLoginTime;
+    private LocalDateTime lastLoginTime;
 
     public void setRole(Role role) {
         this.role = role;

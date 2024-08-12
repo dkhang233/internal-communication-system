@@ -11,15 +11,6 @@ import defaultAvatar from "@/assets/layouts/default-avatar-0.png?url"
 // Tham chiếu đến input (html element)
 const searchInput = ref<any>(null)
 
-// Tên liên hệ hiển thị lên header
-const name = ref<String>("User")
-
-// Trạng thái liên hệ hiển thị lên header
-const online = ref<boolean>(false)
-
-// Avatar của liên hệ hiển thị lên header
-const avatar = ref<string>("")
-
 // Có hiện thị kết quả tìm kiếm hay không
 const showSearchResult = ref<boolean>(false)
 
@@ -29,7 +20,7 @@ const searchResult = ref<UserInfo[]>([])
 
 const handleSearchUser = (value: string) => {
   // Khi bắt đầu tìm kiếm người dùng => không có liên hệ (người dùng khác) đang chat với người dùng hiện tại
-  useChatStore().currentChatUser = 99999
+  useChatStore().currentChatUser = ""
 
   // Tìm kiếm liên hệ (người dùng khác)
   useUserStore()
@@ -47,16 +38,11 @@ const handleBlurSearchInput = () => {
   }, 100)
 }
 
-//  Khi người dùng click vào một liên hệ (người dùng khác) ở kết quả tìm kiếm => thiết lập liên hệ đang chat là liên hệ đó
+// Xử lí khi người dùng click vào một liên hệ ở kết quả tìm kiếm
 const handleClickUser = (user: UserInfo) => {
   // Kiểm tra xem liên hệ vừa chọn là liên hệ cũ hay mới
-  if (useChatStore().conversations.has(user.email)) {
-    // Nếu liên hệ cũ => chỉ cần hiện thị tin nhắn đã nhắn
-    useChatStore().currentChatUser = useChatStore().contacts.findIndex((e) => e.email === user.email)
-    useChatStore().currentChatEmail = user.email
-    useChatStore().showSendNewMessage = false
-  } else {
-    // Nếu liên hệ mới => đẩy thêm vào trong danh sách liên hệ
+  if (!useChatStore().conversations.has(user.email)) {
+    // Nếu liên hệ mới => thêm vào trong danh sách liên hệ
     let newContact: Contact = {
       email: user.email,
       name: user.username,
@@ -66,29 +52,16 @@ const handleClickUser = (user: UserInfo) => {
       isNewContact: true,
       show: true
     }
-    let newContacts = useChatStore().contacts
-    newContacts.unshift(newContact)
-    useChatStore().contacts = newContacts
-
-    // Thiết lập người liên hệ đang chat là liên hệ mới ở trên
-    useChatStore().currentChatUser = 0
-    useChatStore().currentChatEmail = newContact.email
-
-    // Hiển thị giao diện nhắn tin thay vì tìm kiếm liên hệ
-    useChatStore().showSendNewMessage = false
+    useChatStore().contacts.set(user.email, newContact)
   }
+  // Thiết lập người đang nhắn tin hiện tại
+  useChatStore().currentChatUser = user.email
+  useChatStore().showSendNewMessage = false
 }
 
 // Cho biết có tồn tại kết quả tìm kiếm hay không
 const hasResult = computed(() => {
   return searchResult.value.length > 0 ? false : true
-})
-
-// Nếu người liên hệ đang chat (currentChatUser) thay đổi => thay đổi tên liên hệ và trạng thái tương ứng trên header
-watchEffect(() => {
-  name.value = useChatStore().contacts[useChatStore().currentChatUser]?.name || "User"
-  online.value = useChatStore().contacts[useChatStore().currentChatUser]?.online || false
-  avatar.value = useChatStore().contacts[useChatStore().currentChatUser]?.avatar || defaultAvatar
 })
 
 // Khi người dùng ấn vào New chat => focus vào ô tìm kiếm liên hệ
@@ -100,7 +73,10 @@ watchEffect(() => {
   <div class="conversation-container">
     <div class="conversation-header">
       <el-icon v-if="false" class="return" size="100" @click="useChatStore().showContacts = true"><Back /></el-icon>
-      <div v-if="useChatStore().showSendNewMessage" class="conversation-header-search">
+      <div
+        v-if="useChatStore().showSendNewMessage || !useChatStore().currentChatUser"
+        class="conversation-header-search"
+      >
         <span>Đến: </span>
         <el-input
           ref="searchInput"
@@ -114,14 +90,21 @@ watchEffect(() => {
         >
         </el-input>
       </div>
-      <div v-if="!useChatStore().showSendNewMessage" class="conversation-header-info">
-        <styledBadge class="avatar" v-if="online">
-          <el-avatar :src="avatar"> </el-avatar>
+      <div v-if="!useChatStore().showSendNewMessage && useChatStore().currentChatUser" class="conversation-header-info">
+        <styledBadge class="avatar" v-show="useChatStore().contacts.get(useChatStore().currentChatUser)?.online">
+          <el-avatar :src="useChatStore().contacts.get(useChatStore().currentChatUser)?.avatar || defaultAvatar">
+          </el-avatar>
         </styledBadge>
-        <el-avatar class="avatar" v-if="!online" :src="avatar" />
+        <el-avatar
+          class="avatar"
+          v-show="!useChatStore().contacts.get(useChatStore().currentChatUser)?.online"
+          :src="useChatStore().contacts.get(useChatStore().currentChatUser)?.avatar || defaultAvatar"
+        />
         <div class="info">
-          <div class="name">{{ name || "User" }}</div>
-          <div class="status">{{ online ? "Online" : "Offline" }}</div>
+          <div class="name">{{ useChatStore().contacts.get(useChatStore().currentChatUser)?.name || "User" }}</div>
+          <div class="status">
+            {{ useChatStore().contacts.get(useChatStore().currentChatUser)?.online ? "Online" : "Offline" }}
+          </div>
         </div>
       </div>
     </div>
@@ -129,7 +112,10 @@ watchEffect(() => {
       <el-card v-show="showSearchResult" class="conversation-body-result">
         <el-scrollbar v-show="!hasResult" max-height="180px">
           <div class="conversation-body-result-item" v-for="i in searchResult" @click="handleClickUser(i)">
-            <el-avatar class="avatar" v-if="!online" :src="avatar" />
+            <styledBadge class="avatar" v-show="i.status">
+              <el-avatar :src="i.avatar || defaultAvatar"></el-avatar>
+            </styledBadge>
+            <el-avatar class="avatar" v-show="!i.status" :src="i.avatar || defaultAvatar" />
             <div>
               <div>{{ i.username }}</div>
               <div>{{ i.email }}</div>
@@ -138,7 +124,7 @@ watchEffect(() => {
         </el-scrollbar>
         <span v-show="hasResult">Can not find user</span>
       </el-card>
-      <Messages></Messages>
+      <Messages class="messages"></Messages>
     </div>
     <MessageInput class="conversation-footer"></MessageInput>
   </div>
@@ -146,12 +132,11 @@ watchEffect(() => {
 <style lang="scss" scoped>
 .conversation {
   &-container {
-    width: 100%;
     height: 100%;
     background-color: var(--el-bg-color-overlay);
     border-radius: 10px;
     display: flex;
-    flex-direction: column;
+    flex-flow: column;
   }
 
   &-header {
@@ -187,7 +172,8 @@ watchEffect(() => {
 
   &-body {
     position: relative;
-    height: 80%;
+    height: 60%;
+    flex-grow: 7;
     &-result {
       position: absolute;
       left: 10%;
@@ -204,6 +190,7 @@ watchEffect(() => {
   }
 
   &-footer {
+    flex-grow: 1;
     padding: 10px;
     box-shadow: 0px -0.2px var(--el-text-color-regular);
   }

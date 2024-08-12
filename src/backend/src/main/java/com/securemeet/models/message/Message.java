@@ -1,5 +1,6 @@
 package com.securemeet.models.message;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import com.securemeet.enums.MessageStatus;
@@ -40,7 +41,7 @@ public class Message {
     private String content;
 
     @Column(name = "sended_at")
-    private Date sendedAt;
+    private LocalDateTime sendedAt;
 
     @Column(name="status")
     private MessageStatus status;

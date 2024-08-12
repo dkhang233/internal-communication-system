@@ -1,5 +1,6 @@
 package com.securemeet.repositories;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -13,13 +14,13 @@ import com.securemeet.responses.user.ContactResponse;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface ContactRepository extends JpaRepository<Contact, Integer> {
-    @Query(value = "SELECT new com.securemeet.responses.user.ContactResponse(c.ownerId, c.contactId, b.username, b.status, b.avatar, c.contactTime) FROM Contact c JOIN User b on c.contactId = b.email WHERE c.ownerId = :ownerId ORDER BY c.contactTime DESC ")
+    @Query(value = "SELECT new com.securemeet.responses.user.ContactResponse(c.ownerId, c.contactId, b.username, b.status, b.avatar, c.contactTime) FROM Contact c JOIN User b on c.contactId = b.email WHERE c.ownerId = :ownerId ORDER BY c.contactTime")
     List<ContactResponse> findByOwnerId(String ownerId);
 
     @Query(value = "SELECT new com.securemeet.responses.user.ContactResponse(c.ownerId, c.contactId, b.username, b.status, b.avatar, c.contactTime) FROM Contact c JOIN User b ON c.contactId = b.email WHERE c.ownerId = :ownerId AND c.contactId = :contactId")
     Optional<ContactResponse> findByOwnerIdAndContactId(String ownerId, String contactId);
     @Modifying
     @Transactional
-    @Query(value = "UPDATE Contact c SET c.contactTime = :contactTime WHERE c.ownerId = :sender AND c.contactId = :receiver")
-    void updateContactTime(String sender, String receiver, Date contactTime);
+    @Query(value = "UPDATE Contact c SET c.contactTime = :contactTime WHERE (c.ownerId = :sender AND c.contactId = :receiver) OR (c.ownerId = :receiver AND c.contactId = :sender) ")
+    void updateContactTime(String sender, String receiver, LocalDateTime contactTime);
 }

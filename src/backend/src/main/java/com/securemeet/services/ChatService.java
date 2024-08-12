@@ -1,5 +1,7 @@
 package com.securemeet.services;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -39,7 +41,7 @@ public class ChatService {
                 .orElseThrow(() -> new DataNotFoundException("Recipient is incorrect"));
 
         // Kiểm tra liên hệ
-        checkContact(sender.getEmail(), recipient.getEmail(), input.getSendedAt());
+        checkContact(sender.getEmail(), recipient.getEmail(), LocalDateTime.now());
 
         // Tạo Message và lưa vào db
         Message message = Message.builder()
@@ -47,7 +49,7 @@ public class ChatService {
                 .recipient(input.getRecipient())
                 .type(input.getType())
                 .content(input.getContent())
-                .sendedAt(new Date())
+                .sendedAt(LocalDateTime.now())
                 .status(MessageStatus.SUCCESS).build();
         message = messageRepository.save(message);
 
@@ -85,23 +87,23 @@ public class ChatService {
      * Nếu chưa tồn tại => Lưu liên hệ => Gửi tin nhắn
      */
 
-    private void checkContact(String sender, String receiver, Date contactTime) {
+    private void checkContact(String sender, String receiver, LocalDateTime contactTime) {
 
         // Lưu liên hệ cho người gửi tin nhắn nếu chưa tồn tại
         if (contactRepository.findByOwnerIdAndContactId(sender, receiver).isEmpty()) {
             Contact contact = Contact.builder().ownerId(sender).contactId(receiver).contactTime(contactTime).build();
             contactRepository.save(contact);
-        }else { // Nếu tồn tại rồi thì cập nhập thời gian nhắn tin gần nhất
-            contactRepository.updateContactTime(sender,receiver,contactTime);
         }
 
         // Lưu liên hệ cho người nhận tin nhắn
         if (contactRepository.findByOwnerIdAndContactId(receiver, sender).isEmpty()) {
             Contact contact = Contact.builder().ownerId(receiver).contactId(sender).contactTime(contactTime).build();
             contactRepository.save(contact);
-        }else { // Nếu tồn tại rồi thì cập nhập thời gian nhắn tin gần nhất
-            contactRepository.updateContactTime(receiver,sender,contactTime);
         }
+        
+        //Cập nhập thời gian nhắn tin gần nhất
+        contactRepository.updateContactTime(sender,receiver,contactTime);
+
     }
 
     public void handleReadMessages(String contactId, int lastMessageId, int quantity, Authentication authentication) {

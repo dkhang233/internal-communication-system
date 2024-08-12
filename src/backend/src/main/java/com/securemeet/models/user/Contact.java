@@ -1,6 +1,7 @@
 package com.securemeet.models.user;
 
-import java.util.Date;
+import java.time.LocalDateTime;
+
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -8,13 +9,18 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Entity
-@Table(name = "contact")
+
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "contact")
+@Entity
 public class Contact {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,5 +33,5 @@ public class Contact {
     private String contactId;
 
     @Column(name = "contact_time")
-    private Date contactTime;
+    private LocalDateTime contactTime;
 }

@@ -4,6 +4,7 @@ import { MessageData, useChatStore } from "@/store/modules/chat"
 import TextMsg from "./message-types/TextMsg.vue"
 import { computed, onMounted, ref, watchEffect } from "vue"
 import TimeLine from "./message-types/TimeLine.vue"
+import MediaMsg from "./message-types/MediaMsg.vue"
 
 const msgs: any = ref(null)
 const messages = ref<MessageData[]>([])
@@ -22,8 +23,7 @@ watchEffect(() => {
 })
 
 watchEffect(() => {
-  messages.value =
-    useChatStore().conversations.get(useChatStore().contacts[useChatStore().currentChatUser]?.email) || []
+  messages.value = useChatStore().conversations.get(useChatStore().currentChatUser) || []
 })
 
 const isNewChat = computed(() => {
@@ -50,6 +50,7 @@ onMounted(() => {
           :last-message="index + 1 === messages.length"
         >
           <TextMsg v-if="msg.type === 'TEXT'" :content="msg.content" :sent-at="msg.sendedAt"></TextMsg>
+          <MediaMsg v-if="msg.type === 'IMAGE'" :content="msg.content" :sent-at="msg.sendedAt"></MediaMsg>
         </Message>
         <TimeLine v-if="msg.type === 'TIMELINE'" :content="msg.content"></TimeLine>
       </template>

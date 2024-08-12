@@ -1,7 +1,11 @@
 package com.securemeet.configs;
 
+import java.security.Principal;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.securemeet.exceptionhandlers.custom.InvalidDataException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +15,7 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.converter.DefaultContentTypeResolver;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.converter.MessageConverter;
@@ -25,6 +30,7 @@ import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -66,7 +72,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(new ChannelInterceptor() {
-
             @Override
             public Message<?> preSend(Message<?> message, MessageChannel channel) {
                 StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
@@ -88,10 +93,17 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                     }
                     log.debug("error connect");
                 }
-                // if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
-                // Principal authToken = accessor.getUser();
-                // log.debug(authToken.toString());
-                // }
+                
+                 if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
+                     String targetDestination = "/user/abc/message"; // đường dẫn subscribe dùng để kiểm tra
+                     String destination = accessor.getDestination(); // đường dẫn mà user gửi tới
+                     String username = "aaa"; // tên người dùng được phép subscribe đến targetDestination
+                    Principal authToken = accessor.getUser();
+                    if(targetDestination.equals(destination) && !authToken.getName().equals(username)){
+                        throw new MessagingException("You can not subscribe to this destination");
+                    }
+                 }
+
                 try {
                     accessor.setLeaveMutable(true);
                 } catch (Exception e) {
@@ -100,18 +112,17 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 return MessageBuilder.createMessage(message.getPayload(), accessor.getMessageHeaders());
             }
         });
+
     }
 
     @Override
     public boolean configureMessageConverters(List<MessageConverter> messageConverters) {
         DefaultContentTypeResolver resolver = new DefaultContentTypeResolver(); // trình giải quyết
         resolver.setDefaultMimeType(MimeTypeUtils.APPLICATION_JSON);
-
         MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
-        converter.setObjectMapper(new ObjectMapper());
+        converter.setObjectMapper(new ObjectMapper().registerModule(new JavaTimeModule()).setDateFormat(new SimpleDateFormat("dd-MM-yyyy hh:mm:ss")));
         converter.setContentTypeResolver(resolver);
         messageConverters.add(converter);
-
         return false;// cần trả về false để registerDefault=false (f5 phương thức để xem chi tiết)
     }
 

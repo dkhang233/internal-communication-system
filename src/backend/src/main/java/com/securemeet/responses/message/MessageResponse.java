@@ -1,6 +1,6 @@
 package com.securemeet.responses.message;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,7 +22,7 @@ public class MessageResponse {
 
     private String content;
 
-    private Date sendedAt;
+    private LocalDateTime sendedAt;
 
     private String senderUsername;
 

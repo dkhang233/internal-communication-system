@@ -44,16 +44,15 @@ const showFilter = ref<boolean>(false)
 
 // Hiển thị liên hệ tương ứng với liên hệ mà người dùng click vào
 const handleClickContact = (email: string) => {
-  if (useChatStore().contacts.at(0)?.isNewContact) {
-    useChatStore().contacts.shift()
+  if (useChatStore().contacts.get(email)?.isNewContact) {
+    useChatStore().contacts.delete(email)
   }
   useChatStore().showSendNewMessage = false
-  useChatStore().currentChatUser = useChatStore().contacts.findIndex((c) => c.email === email)
-  useChatStore().currentChatEmail = email
+  useChatStore().currentChatUser = email
   useChatStore().hasNewMessage = true
 
   // Cập nhập trạng thái đọc tin nhắn
-  useChatStore().readMessage()
+  useChatStore().readMessage(email)
 }
 
 // Lọc liên hệ theo giá trị mà người dùng nhập
@@ -62,13 +61,18 @@ const handleFilter = (name: string) => {
   return reg.test(name)
 }
 
+const handleSearchUser = () => {
+  useChatStore().showSendNewMessage = true
+  useChatStore().currentChatUser = ""
+}
+
 // Nếu người dùng không dùng chức năng lọc nữa => xóa nội dung trong input của  bộ lọc
 watchEffect(() => {
   showFilter.value || filterInput.value?.clear()
 })
 
-computed(() => {
-  const reg = new RegExp(search.value)
+let contacts = computed(() => {
+  return Array.from(useChatStore().contacts).reverse() || []
 })
 </script>
 <template>
@@ -82,7 +86,7 @@ computed(() => {
               <el-icon class="contacts-header-main-icon" @click="showFilter = true"><Filter /></el-icon>
             </el-tooltip>
             <el-tooltip content="New chat" placement="top">
-              <el-icon class="contacts-header-main-icon" @click="useChatStore().showSendNewMessage = true">
+              <el-icon class="contacts-header-main-icon" @click="handleSearchUser">
                 <EditPen />
               </el-icon>
             </el-tooltip>
@@ -104,15 +108,15 @@ computed(() => {
       </div>
       <el-skeleton v-show="useChatStore().loadingData" class="list-skeleton" :count="4" animated />
       <el-scrollbar v-show="!useChatStore().loadingData" class="list">
-        <template v-for="value in useChatStore().contacts" :key="value.email">
+        <template v-for="value in contacts" :key="value[0]">
           <Contact
-            :email="value.email"
-            :name="value.name"
-            :online="value.online"
-            :unreadMessage="value.unreadMessage"
-            :avatar="value.avatar"
-            v-show="handleFilter(value.name)"
-            @click="handleClickContact(value.email)"
+            :email="value[1].email"
+            :name="value[1].name"
+            :online="value[1].online"
+            :unreadMessage="value[1].unreadMessage"
+            :avatar="value[1].avatar"
+            v-show="handleFilter(value[1].name)"
+            @click="handleClickContact(value[1].email)"
           />
         </template>
       </el-scrollbar>
@@ -129,8 +133,7 @@ computed(() => {
 }
 
 .contacts {
-  min-width: 25%;
-  flex-grow: 1;
+  width: 20%;
   display: flex;
   flex-direction: column;
   padding-right: 10px;
@@ -168,5 +171,9 @@ computed(() => {
       height: 100%;
     }
   }
+}
+
+.conversation {
+  width: 80%;
 }
 </style>

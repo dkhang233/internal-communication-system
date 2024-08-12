@@ -3,7 +3,7 @@ import { MessageData, useChatStore } from "@/store/modules/chat"
 import StyledBadge from "./StyledBadge.vue"
 import { computed, ref, watchEffect } from "vue"
 import MessageType from "@/constants/message-type"
-import dayjs from "dayjs"
+import dayjs, { Dayjs } from "dayjs"
 import defaultAvatar from "@/assets/layouts/default-avatar-0.png?url"
 
 interface Props {
@@ -20,22 +20,29 @@ const newestMessage = ref<MessageData>({
   id: -1,
   type: MessageType.TEXT,
   content: "",
-  sendedAt: new Date(),
+  sendedAt: dayjs(),
   incoming: false,
   status: "SENDING"
 })
 
-const handleTime = (input: Date) => {
+const handleTime = (input: Dayjs) => {
   if (dayjs().isAfter(dayjs(input), "day")) return dayjs(input).format("DD/MM")
   return dayjs(input).format("HH:mm")
 }
+
+const displayContent = computed(() => {
+  if (newestMessage.value.type === MessageType.IMAGE) return "[Image]"
+
+  if (newestMessage.value.content === "") return "New chat"
+  else return newestMessage.value.content
+})
 
 watchEffect(() => {
   newestMessage.value = useChatStore().conversations.get(props.email)?.at(-1) || {
     id: -1,
     type: MessageType.TEXT,
     content: "",
-    sendedAt: new Date(),
+    sendedAt: dayjs(),
     incoming: false,
     status: "SENDING"
   }
@@ -51,7 +58,7 @@ watchEffect(() => {
         <el-avatar class="avatar" v-show="!online" :src="avatar || defaultAvatar"> </el-avatar>
         <div class="detail">
           <div class="name">{{ name }}</div>
-          <div class="message">{{ newestMessage.content !== "" ? newestMessage.content : "New chat" }}</div>
+          <div class="message">{{ displayContent }}</div>
         </div>
       </div>
       <div class="footer">

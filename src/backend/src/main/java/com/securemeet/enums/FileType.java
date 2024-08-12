@@ -1,9 +1,10 @@
 package com.securemeet.enums;
 
 public enum FileType {
-    AUDIO,
-    FILE,
+    TEXT,
+    LINK,
     IMAGE,
+    AUDIO,
     VIDEO,
-
+    FILE,
 }

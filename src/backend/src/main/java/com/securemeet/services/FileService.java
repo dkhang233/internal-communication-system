@@ -93,4 +93,8 @@ public class FileService {
         
         return response;
     }
+
+    public byte[] download(String filePath){
+        return s3Util.download(bucketName,filePath);
+    }
 }

@@ -1,13 +1,22 @@
-import { MessageResponse } from "@/api/chat/types/message"
 import { getContactData } from "@/api/user"
+import MessageStatus from "@/constants/message-status"
 import MessageType from "@/constants/message-type"
 import { Contact, MessageData, useChatStore } from "@/store/modules/chat"
 import { IMessage } from "@stomp/stompjs"
-import dayjs from "dayjs"
+import dayjs, { Dayjs } from "dayjs"
+
+export interface WSMessageResponse {
+  id: number
+  sender: string
+  recipient: string
+  type: MessageType
+  content: string
+  sendedAt: Dayjs
+  status: MessageStatus
+}
 
 const handleReceiveMessage = (message: IMessage): void => {
-  let msg: MessageResponse = JSON.parse(message.body)
-
+  let msg: WSMessageResponse = JSON.parse(message.body)
   if (!useChatStore().conversations.has(msg.sender)) {
     // Thêm liên hệ mới nếu chưa có
     getContactData(msg.sender).then(({ data }) => {
@@ -20,51 +29,33 @@ const handleReceiveMessage = (message: IMessage): void => {
         unreadMessage: 1,
         show: true
       }
-      useChatStore().contacts.unshift(contact)
+      useChatStore().contacts.set(contact.email, contact)
     })
   } else {
     // Nếu đã tồn tại liên hệ thì đưa lên đầu danh sách
-    let index = useChatStore().contacts.findIndex((c) => c.email === msg.sender)
-    let contact: Contact = useChatStore().contacts.splice(index, 1)[0]
-
-    contact.unreadMessage++ // Tăng số lượng tin  nhắn lên 1
-    useChatStore().contacts.unshift(contact)
-    // Nếu liên hệ là người đang nhắn tin hiện tại, cập nhập trạng thái đọc tin nhắn
-    if (msg.sender === useChatStore().currentChatEmail) {
-      useChatStore().readMessage()
-    }
+    let contact = useChatStore().contacts.get(msg.sender)
+    useChatStore().contacts.delete(msg.sender)
+    if (contact) useChatStore().contacts.set(msg.sender, contact)
   }
 
-  // Thêm message mới
-  let msgs = useChatStore().conversations.get(msg.sender) || []
-
-  let res: MessageData = {
+  let result: MessageData = {
     id: msg.id,
     type: msg.type,
     content: msg.content,
-    sendedAt: new Date(msg.sendedAt),
+    sendedAt: dayjs(msg.sendedAt),
     incoming: true,
-    status: msg.status
-  }
-  // Nếu tin nhắn thêm vào khác ngày so với tin nhắn phía trước thì thêm timeline
-  if (dayjs(msg.sendedAt).isAfter(msgs.at(-1)?.sendedAt || dayjs("1970-01-01"), "day")) {
-    msgs.push({
-      id: -1,
-      type: MessageType.TIMELINE,
-      content: dayjs(msg.sendedAt).format("DD/MM/YYYY"),
-      sendedAt: new Date(),
-      incoming: false,
-      status: "SUCCESS"
-    })
+    status: MessageStatus.SUCCESS
   }
 
-  msgs.push(res)
+  useChatStore().addMessage(msg.sender, result)
 
-  useChatStore().conversations.set(msg.sender, msgs)
-  useChatStore().hasNewMessage = true
+  // Cập nhật trạng thái đọc tin nhắn nếu là liên hệ đang nhắn tin
+  if (msg.sender === useChatStore().currentChatUser) {
+    useChatStore().readMessage(msg.sender)
+  }
 }
 
-type MessageStatus = {
+type MessageStatusResponse = {
   contactId: string
   lastMessageId: number
   quantity: number
@@ -72,19 +63,19 @@ type MessageStatus = {
 
 // Xử lý trạng thái tin nhắn
 const handleMessageStatus = (message: IMessage): void => {
-  let status: MessageStatus = JSON.parse(message.body)
+  let status: MessageStatusResponse = JSON.parse(message.body)
 
   let check = 0
   useChatStore()
     .conversations.get(status.contactId)
     ?.forEach((msg) => {
       if (msg.id === status.lastMessageId) {
-        msg.status = "READ"
+        msg.status = MessageStatus.READ
         check++
       }
 
       if (check > 0 && check <= status.quantity) {
-        msg.status = "READ"
+        msg.status = MessageStatus.READ
       }
     })
 }

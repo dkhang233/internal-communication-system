@@ -11,7 +11,6 @@ interface WebsocketRequest {
   body: string
   isBinaryData: boolean
   binaryData?: Uint8Array
-  // headers: { priority: "9" }
 }
 
 const stompClient = Stomp.over(function () {
@@ -35,7 +34,7 @@ stompClient.onWebSocketError = (error) => {
 
 // Handle Stomp Error
 stompClient.onStompError = (frame) => {
-  console.error("Broker reported error: " + frame.headers["message"])
+  console.error("Broker reported error: " + frame)
 }
 
 // connect to Websocket Server

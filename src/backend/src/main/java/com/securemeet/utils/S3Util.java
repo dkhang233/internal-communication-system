@@ -8,10 +8,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
-import software.amazon.awssdk.services.s3.model.DeleteBucketRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.*;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
@@ -91,6 +90,7 @@ public class S3Util {
             s3Client.putObject(request,body);
         }catch(Exception e){
             log.error(e.getMessage());
+            throw new RuntimeException("Upload failed");
         }
         return  objectName;
     }
@@ -113,8 +113,23 @@ public class S3Util {
             s3Client.putObject(request,body);
         }catch(Exception e){
             log.error(e.getMessage());
+            throw new RuntimeException("Upload failed");
         }
         
         return  objectName;
+    }
+
+    public byte[] download(String bucketName, String filePath){
+        if(StringUtils.isBlank(filePath)){
+            throw new InvalidDataException("Filename is blank");
+        }
+       
+        try {
+            GetObjectRequest request = GetObjectRequest.builder().bucket(bucketName).key(filePath).build();
+            return s3Client.getObject(request).readAllBytes();
+        } catch (IOException e) {
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 }

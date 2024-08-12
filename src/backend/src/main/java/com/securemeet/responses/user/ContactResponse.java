@@ -1,6 +1,6 @@
 package com.securemeet.responses.user;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,5 +17,5 @@ public class ContactResponse {
     private String contactUsername;
     private int status;
     private  String avatar;
-    private Date contactTime;
+    private LocalDateTime contactTime;
 }

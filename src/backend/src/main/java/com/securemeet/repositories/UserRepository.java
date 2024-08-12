@@ -1,7 +1,6 @@
 package com.securemeet.repositories;
 
-import java.util.Date;
-import java.util.List;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -29,7 +28,7 @@ public interface UserRepository extends PagingAndSortingRepository<User, String>
     @Modifying
     @Transactional
     @Query(value = "UPDATE User u SET u.lastLoginTime = :lastLoginTime WHERE u.email = :email")
-    void setLastLoginTime(@Param("email") String email, @Param("lastLoginTime") Date lastLoginTime);
+    void setLastLoginTime(@Param("email") String email, @Param("lastLoginTime") LocalDateTime lastLoginTime);
 
     @Query(value = "SELECT new com.securemeet.responses.user.UserInfo(u.email, u.username, u.role, u.avatar, u.status) FROM User u WHERE u.email LIKE :keyword OR u.username LIKE :keyword")
     Page<UserInfo> searchUser(String keyword, Pageable pageable);
