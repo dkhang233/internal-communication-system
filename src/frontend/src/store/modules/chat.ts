@@ -172,7 +172,7 @@ export const useChatStore = defineStore("chat", () => {
 
   const updateUploadProgress = (name: string, process: number) => {
     console.log(process)
-    setTimeout(() => uploadProgress.value.set(name, process), 500)
+    uploadProgress.value.set(name, process)
   }
 
   return {

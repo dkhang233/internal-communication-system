@@ -66,15 +66,17 @@ const handleShowSendMore = () => {
   }
 }
 
+const url = ref<string>("")
+
 const handleBeforeUploadImage = (rawFile: UploadRawFile) => {
-  let url = URL.createObjectURL(rawFile)
-  console.log(url)
+  handleShowSendMore()
+  url.value = URL.createObjectURL(rawFile)
   let msg: MessageData = {
     id: 0,
     type: MessageType.IMAGE,
     content: JSON.stringify({
-      originUrl: url, // Url dẫn tới ảnh gốc
-      thumbnailUrl: url
+      originUrl: url.value, // Url dẫn tới ảnh gốc
+      thumbnailUrl: url.value
     }),
     sendedAt: dayjs(),
     incoming: false,
@@ -85,7 +87,7 @@ const handleBeforeUploadImage = (rawFile: UploadRawFile) => {
 }
 
 const handleSendImage = (options: UploadRequestOptions) => {
-  return uploadImageApi(options.file)
+  return uploadImageApi(options.file, url.value)
 }
 
 const handleSendImageSuccess = (res: any, file: UploadFile) => {
@@ -104,12 +106,36 @@ const handleSendImageSuccess = (res: any, file: UploadFile) => {
   useChatStore().sendMessage(msg)
 }
 
+const handleBeforeUploadFile = (rawFile: UploadRawFile) => {
+  handleShowSendMore()
+  url.value = URL.createObjectURL(rawFile)
+  let msg: MessageData = {
+    id: 0,
+    type: MessageType.FILE,
+    content: url.value,
+    sendedAt: dayjs(),
+    incoming: false,
+    status: MessageStatus.SENDING
+  }
+  useChatStore().addMessage(useChatStore().currentChatUser, msg)
+  useChatStore().updateUploadProgress(rawFile.name, 0)
+}
+
 const handleSendFile = (options: UploadRequestOptions) => {
   return uploadFileApi(options.file)
 }
 
 const handleSendFileSuccess = (res: any, file: UploadFile) => {
-  console.log(res)
+  let msg: MessageData = useChatStore().conversations.get(useChatStore().currentChatUser)!.pop() || {
+    id: -2,
+    type: MessageType.FILE,
+    content: "",
+    sendedAt: dayjs(),
+    incoming: false,
+    status: MessageStatus.FAILED
+  }
+  msg.content = res.data
+  useChatStore().sendMessage(msg)
 }
 
 const showSendMore = computed(() => {
@@ -122,44 +148,29 @@ const showSendMore = computed(() => {
     <EmojiPicker class="emoji" v-show="showOptions && showEmoji" :native="true" @select="onSelectEmoji" />
     <el-card class="send-more" v-show="showSendMore">
       <div class="body">
-        <el-upload
-          class="item"
-          :http-request="handleSendImage"
-          :before-upload="handleBeforeUploadImage"
-          :on-success="handleSendImageSuccess"
-          :show-file-list="false"
-        >
+        <el-upload class="item" :http-request="handleSendImage" :before-upload="handleBeforeUploadImage"
+          :on-success="handleSendImageSuccess" :show-file-list="false">
           <Picture class="icon" />
           <span class="title">Attack image</span>
         </el-upload>
-        <el-upload
-          class="item"
-          :http-request="handleSendFile"
-          :on-success="handleSendFileSuccess"
-          :show-file-list="false"
-        >
+        <el-upload class="item" :http-request="handleSendFile" :before-upload="handleBeforeUploadFile"
+          :on-success="handleSendFileSuccess" :show-file-list="false">
           <Files class="icon" />
           <span class="title">Attack file</span>
         </el-upload>
       </div>
     </el-card>
     <div class="input">
-      <el-input
-        ref="msgInput"
-        class="main"
-        v-model="input"
-        type="textarea"
-        :autosize="{ minRows: 1, maxRows: 6 }"
-        resize="none"
-        placeholder="Please Input"
-        @keydown="handlePressEnter"
-      />
+      <el-input ref="msgInput" class="main" v-model="input" type="textarea" :autosize="{ minRows: 1, maxRows: 6 }"
+        resize="none" placeholder="Please Input" @keydown="handlePressEnter" />
       <div class="suffix">
         <div class="emoji-btn" @click="handleShowEmoji">
           <SvgIcon name="smile-emoji" />
         </div>
         <div class="more-btn" @click="handleShowSendMore">
-          <el-icon size="18"><MoreFilled /></el-icon>
+          <el-icon size="18">
+            <MoreFilled />
+          </el-icon>
         </div>
       </div>
     </div>
@@ -175,6 +186,7 @@ const showSendMore = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+
   .input {
     display: flex;
     justify-content: end;
@@ -186,6 +198,7 @@ const showSendMore = computed(() => {
     border: solid 1px;
     border-radius: 8px;
     background-color: var(--el-input-bg-color, var(--el-fill-color-blank));
+
     &:focus-within {
       box-shadow: 0px 0px 5px 0px var(--el-color-primary);
     }
@@ -193,6 +206,7 @@ const showSendMore = computed(() => {
     @media screen and (max-width: 665px) and (min-width: 450px) {
       width: 25rem;
     }
+
     @media screen and (max-width: 450px) {
       width: 17rem;
     }
@@ -207,11 +221,13 @@ const showSendMore = computed(() => {
       display: flex;
       align-content: center;
       justify-content: center;
+
       .more-btn {
         width: 20px;
         margin: 0px 5px;
         cursor: pointer;
         opacity: 0.7;
+
         &:hover {
           opacity: 1;
         }
@@ -222,6 +238,7 @@ const showSendMore = computed(() => {
         margin: 0px 5px;
         cursor: pointer;
         opacity: 0.7;
+
         &:hover {
           opacity: 1;
         }
@@ -250,14 +267,17 @@ const showSendMore = computed(() => {
     z-index: 10;
     width: 250px;
     --el-card-padding: 0px;
+
     .body {
       display: flex;
       flex-direction: column;
       justify-content: space-around;
+
       .item {
         display: flex;
         align-items: center;
         padding: 15px 20px;
+
         &:hover {
           cursor: pointer;
           background-color: var(--el-bg-color-overlay);

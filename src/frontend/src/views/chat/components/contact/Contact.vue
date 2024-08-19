@@ -32,8 +32,8 @@ const handleTime = (input: Dayjs) => {
 
 const displayContent = computed(() => {
   if (newestMessage.value.type === MessageType.IMAGE) return "[Image]"
-
-  if (newestMessage.value.content === "") return "New chat"
+  else if (newestMessage.value.type === MessageType.FILE) return "[File]"
+  else if (newestMessage.value.content === "") return "New chat"
   else return newestMessage.value.content
 })
 
@@ -117,6 +117,7 @@ watchEffect(() => {
 .avatar {
   margin-right: 15px;
 }
+
 .detail {
   height: 100%;
 }

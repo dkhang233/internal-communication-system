@@ -14,7 +14,7 @@ export const uploadFileApi = (file: UploadRawFile) => {
   })
 }
 
-export const uploadImageApi = (image: UploadRawFile) => {
+export const uploadImageApi = (image: UploadRawFile, localUrl: string) => {
   return request<ImageUploadResponseData>({
     url: "/files/upload/image",
     method: "post",
@@ -23,8 +23,9 @@ export const uploadImageApi = (image: UploadRawFile) => {
     },
     data: { image: image },
     onUploadProgress: function (progressEvent) {
-      if (progressEvent?.total)
-        useChatStore().updateUploadProgress(image.name, Math.round((progressEvent.loaded * 100) / progressEvent?.total))
+      if (progressEvent.total) {
+        useChatStore().updateUploadProgress(localUrl, Math.round((progressEvent.loaded * 100) / progressEvent?.total))
+      }
     }
   })
 }
